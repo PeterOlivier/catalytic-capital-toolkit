@@ -22,23 +22,23 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 const colorClasses: Record<Category, string> = {
-  grant: "bg-purple-50 text-purple-700 border-purple-200",
-  debt: "bg-blue-50 text-blue-700 border-blue-200",
-  guarantee: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  equity: "bg-red-50 text-red-700 border-red-200",
-  hybrid: "bg-amber-50 text-amber-700 border-amber-200",
-  government: "bg-slate-50 text-slate-700 border-slate-200",
-  conventional: "bg-cyan-50 text-cyan-700 border-cyan-200",
+  grant: "bg-[#7b6b9e]/10 text-[#7b6b9e] border-[#7b6b9e]/20",
+  debt: "bg-[#3e6b8a]/10 text-[#3e6b8a] border-[#3e6b8a]/20",
+  guarantee: "bg-[#5a8a6e]/10 text-[#5a8a6e] border-[#5a8a6e]/20",
+  equity: "bg-[#b05445]/10 text-[#b05445] border-[#b05445]/20",
+  hybrid: "bg-[#c9973a]/10 text-[#c9973a] border-[#c9973a]/20",
+  government: "bg-[#5c6b78]/10 text-[#5c6b78] border-[#5c6b78]/20",
+  conventional: "bg-[#4a7b8f]/10 text-[#4a7b8f] border-[#4a7b8f]/20",
 };
 
 export const categoryColorMap: Record<Category, string> = {
-  grant: "#8b5cf6",
-  debt: "#2563eb",
-  guarantee: "#059669",
-  equity: "#dc2626",
-  hybrid: "#d97706",
-  government: "#475569",
-  conventional: "#0891b2",
+  grant: "#7b6b9e",
+  debt: "#3e6b8a",
+  guarantee: "#5a8a6e",
+  equity: "#b05445",
+  hybrid: "#c9973a",
+  government: "#5c6b78",
+  conventional: "#4a7b8f",
 };
 
 export function CategoryBadge({

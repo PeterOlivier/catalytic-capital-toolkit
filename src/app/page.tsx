@@ -28,11 +28,11 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 const riskColors: Record<string, string> = {
-  "very-low": "bg-emerald-100 text-emerald-700",
-  low: "bg-green-100 text-green-700",
-  moderate: "bg-yellow-100 text-yellow-700",
-  high: "bg-orange-100 text-orange-700",
-  "very-high": "bg-red-100 text-red-700",
+  "very-low": "bg-[#5a8a6e]/15 text-[#5a8a6e]",
+  low: "bg-[#5a8a6e]/10 text-[#5a8a6e]",
+  moderate: "bg-[#c9973a]/15 text-[#c9973a]",
+  high: "bg-[#b05445]/12 text-[#b05445]",
+  "very-high": "bg-[#b05445]/20 text-[#b05445]",
 };
 
 const riskLabels: Record<string, string> = {
@@ -71,15 +71,15 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-accent/5 via-white to-white">
+      <section className="relative overflow-hidden bg-gradient-to-b from-accent/6 via-background to-background">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 xl:px-20 pt-16 pb-12">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 text-accent text-sm font-medium mb-8">
               23 instruments across 6 categories
             </div>
-            <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-5">
+            <h1 className="font-heading text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-5">
               The Catalytic Capital{" "}
-              <span className="text-accent">Toolkit</span>
+              <span className="text-accent italic">Toolkit</span>
             </h1>
             <p className="text-lg sm:text-xl text-text-secondary leading-relaxed max-w-2xl">
               Explore every major type of catalytic and alternative capital.
@@ -91,7 +91,7 @@ export default function Home() {
       </section>
 
       {/* Filters */}
-      <section className="sticky top-16 z-40 bg-white/80 backdrop-blur-xl border-b border-border">
+      <section className="sticky top-16 z-40 bg-[#faf6ef]/85 backdrop-blur-xl border-b border-border">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 xl:px-20 py-4">
           {/* Search */}
           <div className="relative mb-4">
@@ -101,7 +101,7 @@ export default function Home() {
               placeholder="Search instruments..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface-secondary border border-transparent focus:border-accent/30 focus:bg-white focus:outline-none text-sm transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface-secondary border border-transparent focus:border-accent/30 focus:bg-surface focus:outline-none text-sm transition-all"
             />
           </div>
 
@@ -111,7 +111,7 @@ export default function Home() {
               onClick={() => setActiveCategory("all")}
               className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
                 activeCategory === "all"
-                  ? "bg-foreground text-white"
+                  ? "bg-foreground text-[#f5f0e8]"
                   : "bg-surface-secondary text-text-secondary hover:bg-border"
               }`}
             >
@@ -119,7 +119,6 @@ export default function Home() {
               <span className="opacity-60 ml-1">{categoryCounts.all}</span>
             </button>
             {CATEGORIES.filter((cat) => categoryCounts[cat.id]).map((cat) => {
-              const Icon = iconMap[cat.icon];
               return (
                 <button
                   key={cat.id}
@@ -161,11 +160,11 @@ export default function Home() {
               >
                 <Link
                   href={`/instrument/${inst.slug}`}
-                  className="group block bg-white rounded-2xl border border-border hover:border-border-hover hover:shadow-md transition-all duration-200 p-5 h-full"
+                  className="group block bg-surface rounded-2xl border border-border hover:border-border-hover hover:shadow-md transition-all duration-200 p-5 h-full"
                 >
                   {/* Header */}
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="text-base font-semibold text-foreground group-hover:text-accent transition-colors">
+                    <h3 className="font-heading text-base font-semibold text-foreground group-hover:text-accent transition-colors">
                       {inst.name}
                     </h3>
                     <CategoryBadge category={inst.category} size="sm" />

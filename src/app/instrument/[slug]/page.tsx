@@ -10,6 +10,7 @@ import { ReturnSpectrum } from "@/components/ReturnSpectrum";
 import { ActorMap } from "@/components/ActorMap";
 import { DefaultCascade } from "@/components/DefaultCascade";
 import { CostCalculator } from "@/components/CostCalculator";
+import { InTheWild } from "@/components/InTheWild";
 import {
   ArrowLeft,
   ArrowRight,
@@ -18,6 +19,7 @@ import {
   Users,
   AlertTriangle,
   Calculator,
+  Telescope,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -27,6 +29,7 @@ const lenses = [
   { id: "actors", label: "Key Stakeholders", Icon: Users, shortLabel: "Stakeholders" },
   { id: "default", label: "Default Scenario", Icon: AlertTriangle, shortLabel: "Default" },
   { id: "calculator", label: "Cost Calculator", Icon: Calculator, shortLabel: "Calculator" },
+  { id: "wild", label: "In the Wild", Icon: Telescope, shortLabel: "Wild" },
 ];
 
 export default function InstrumentPage() {
@@ -106,7 +109,7 @@ export default function InstrumentPage() {
           </Link>
 
           <div className="flex items-start justify-between gap-4 mb-2">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
               {instrument.name}
             </h1>
             <CategoryBadge category={instrument.category} size="md" />
@@ -140,7 +143,7 @@ export default function InstrumentPage() {
             {instrument.features.map((f) => (
               <span
                 key={f}
-                className="text-xs px-2.5 py-1 rounded-lg border border-border bg-white text-text-secondary"
+                className="text-xs px-2.5 py-1 rounded-lg border border-border bg-surface text-text-secondary"
               >
                 {f}
               </span>
@@ -150,7 +153,7 @@ export default function InstrumentPage() {
       </section>
 
       {/* Lens tabs */}
-      <section className="sticky top-16 z-30 bg-white/80 backdrop-blur-xl border-b border-border">
+      <section className="sticky top-16 z-30 bg-[#faf6ef]/85 backdrop-blur-xl border-b border-border">
         <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-16 xl:px-20">
           <div className="relative">
           <div className="flex gap-1 overflow-x-auto py-2 -mx-6 px-6 sm:mx-0 sm:px-0 scrollbar-none">
@@ -175,7 +178,7 @@ export default function InstrumentPage() {
               );
             })}
           </div>
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/80 to-transparent pointer-events-none sm:hidden" />
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#faf6ef]/85 to-transparent pointer-events-none sm:hidden" />
           </div>
         </div>
       </section>
@@ -190,6 +193,7 @@ export default function InstrumentPage() {
               actors: ActorMap,
               default: DefaultCascade,
               calculator: CostCalculator,
+              wild: InTheWild,
             }[lens.id]!;
             return (
               <section
@@ -198,7 +202,7 @@ export default function InstrumentPage() {
                 className="scroll-mt-28 py-8"
                 style={i < lenses.length - 1 ? { borderBottom: "1px solid var(--color-border)" } : undefined}
               >
-                <h2 className="text-lg font-semibold text-foreground mb-5">
+                <h2 className="font-heading text-lg font-semibold text-foreground mb-5">
                   {lens.label}
                 </h2>
                 <Component instrument={instrument} />

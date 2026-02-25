@@ -1,29 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafafa;
-  --foreground: #0f172a;
-  --accent: #2563eb;
-  --accent-light: #dbeafe;
-  --surface: #ffffff;
-  --surface-secondary: #f1f5f9;
-  --border: #e2e8f0;
-  --border-hover: #cbd5e1;
-  --text-secondary: #64748b;
-  --text-tertiary: #94a3b8;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --info: #3b82f6;
+  /* Yoshida shin-hanga inspired palette */
+  --background: #f5f0e8;       /* warm washi paper */
+  --foreground: #1e2d3d;       /* deep indigo-slate */
+  --accent: #b8763e;           /* burnt ochre / warm gold */
+  --accent-light: #f0e4d4;     /* soft ochre wash */
+  --surface: #faf6ef;          /* lighter washi */
+  --surface-secondary: #ece6da; /* aged paper */
+  --border: #d5ccbd;           /* soft warm border */
+  --border-hover: #c4b8a5;     /* deeper warm border */
+  --text-secondary: #5c6b78;   /* muted blue-slate */
+  --text-tertiary: #8d9aa5;    /* lighter blue-slate */
+  --success: #5a8a6e;          /* muted forest green */
+  --warning: #c9973a;          /* warm amber */
+  --danger: #b05445;           /* muted vermilion */
+  --info: #4a7b8f;             /* muted teal */
 
-  /* Category colors */
-  --cat-grant: #8b5cf6;
-  --cat-debt: #2563eb;
-  --cat-guarantee: #059669;
-  --cat-equity: #dc2626;
-  --cat-hybrid: #d97706;
-  --cat-government: #475569;
-  --cat-conventional: #0891b2;
+  /* Category colors — nature-inspired, muted like woodblock pigments */
+  --cat-grant: #7b6b9e;        /* muted wisteria purple */
+  --cat-debt: #3e6b8a;         /* Prussian blue, muted */
+  --cat-guarantee: #5a8a6e;    /* pine/moss green */
+  --cat-equity: #b05445;       /* burnt vermilion */
+  --cat-hybrid: #c9973a;       /* warm ochre-amber */
+  --cat-government: #5c6b78;   /* steel slate */
+  --cat-conventional: #4a7b8f; /* ocean teal */
 }
 
 @theme inline {
@@ -50,6 +51,7 @@
   --color-cat-conventional: var(--cat-conventional);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-playfair);
 }
 
 body {
@@ -58,7 +60,12 @@ body {
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
 }
 
-/* Custom scrollbar */
+/* Serif heading utility */
+.font-heading {
+  font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
+}
+
+/* Custom scrollbar — warm tones */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -96,15 +103,15 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 2px solid var(--surface);
+  box-shadow: 0 1px 3px rgba(30, 45, 61, 0.2);
   transition: box-shadow 0.15s ease;
 }
 input[type="range"]::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1), 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 4px rgba(184, 118, 62, 0.12), 0 1px 3px rgba(30, 45, 61, 0.2);
 }
 input[type="range"]:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2), 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 4px rgba(184, 118, 62, 0.2), 0 1px 3px rgba(30, 45, 61, 0.2);
 }
 /* Firefox range styling */
 input[type="range"]::-moz-range-thumb {
@@ -113,8 +120,8 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 2px solid var(--surface);
+  box-shadow: 0 1px 3px rgba(30, 45, 61, 0.2);
 }
 input[type="range"]::-moz-range-progress {
   background: var(--accent);

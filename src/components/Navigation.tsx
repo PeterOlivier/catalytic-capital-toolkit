@@ -15,15 +15,15 @@ export function Navigation() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-border">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#faf6ef]/85 backdrop-blur-xl border-b border-border">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 xl:px-20">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-              <BarChart3 className="w-4.5 h-4.5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
+              <BarChart3 className="w-4.5 h-4.5 text-[#f5f0e8]" />
             </div>
-            <span className="text-sm font-semibold text-foreground">
+            <span className="font-heading text-base font-semibold text-foreground tracking-tight">
               Catalytic Capital <span className="font-normal text-text-secondary">Toolkit</span>
             </span>
           </Link>
@@ -35,14 +35,13 @@ export function Navigation() {
                 item.href === "/"
                   ? pathname === "/" || pathname.startsWith("/instrument")
                   : pathname.startsWith(item.href);
-              const Icon = item.icon;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     isActive
-                      ? "bg-accent/10 text-accent"
+                      ? "bg-accent/12 text-accent"
                       : "text-text-secondary hover:text-foreground hover:bg-surface-secondary"
                   }`}
                 >
@@ -68,13 +67,12 @@ export function Navigation() {
 
       {/* Mobile Nav */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-white px-4 py-3">
+        <div className="md:hidden border-t border-border bg-surface px-4 py-3">
           {navItems.map((item) => {
             const isActive =
               item.href === "/"
                 ? pathname === "/" || pathname.startsWith("/instrument")
                 : pathname.startsWith(item.href);
-            const Icon = item.icon;
             return (
               <Link
                 key={item.href}
@@ -82,7 +80,7 @@ export function Navigation() {
                 onClick={() => setMobileOpen(false)}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium ${
                   isActive
-                    ? "bg-accent/10 text-accent"
+                    ? "bg-accent/12 text-accent"
                     : "text-text-secondary"
                 }`}
               >

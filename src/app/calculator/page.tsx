@@ -351,14 +351,14 @@ export default function CalculatorPage() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-accent/5 via-white to-white">
+      <section className="relative overflow-hidden bg-gradient-to-b from-accent/6 via-background to-background">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 xl:px-20 pt-16 pb-12">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 text-accent text-sm font-medium mb-8">
               Interactive capital stack modeler
             </div>
-            <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-5">
-              Build <em className="text-accent not-italic font-bold">Your</em> Capital Stack
+            <h1 className="font-heading text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-5">
+              Build <em className="text-accent italic">Your</em> Capital Stack
             </h1>
             <p className="text-lg sm:text-xl text-text-secondary leading-relaxed max-w-2xl">
               Mix conventional and catalytic instruments, adjust rates, terms,
@@ -372,7 +372,7 @@ export default function CalculatorPage() {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 xl:px-20 py-8">
         {/* Payment Timeline Chart */}
         {debtLayerDefs.length > 0 && chartData.length > 1 && (
-          <div className="mb-8 bg-white rounded-2xl border border-border p-5">
+          <div className="mb-8 bg-surface rounded-2xl border border-border p-5">
             <h3 className="text-sm font-semibold text-text-secondary mb-2">
               Debt Payment Schedule Over Time
             </h3>
@@ -389,7 +389,7 @@ export default function CalculatorPage() {
                 </div>
               ))}
 <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-                <div className="w-3 h-0.5 rounded-full bg-amber-500" />
+                <div className="w-3 h-0.5 rounded-full bg-accent" />
                 Amount Raised
               </div>
             </div>
@@ -451,7 +451,7 @@ export default function CalculatorPage() {
                   <polyline
                     points={chartData.map((d, i) => `${i},${100 - (d.amountRaised / chartMaxRaised) * 100}`).join(" ")}
                     fill="none"
-                    stroke="#f59e0b"
+                    stroke="#b8763e"
                     strokeWidth="0.8"
                     vectorEffect="non-scaling-stroke"
                   />
@@ -508,9 +508,9 @@ export default function CalculatorPage() {
                           const equity = active.filter((ls) => ls.def.isEquity).reduce((s, ls) => s + ls.layer.amount, 0);
                           const grants = active.filter((ls) => ls.def.isGrant).reduce((s, ls) => s + ls.layer.amount, 0);
                           const categories = [
-                            { label: "Debt", amount: debt, color: "#0891b2" },
-                            { label: "Equity", amount: equity, color: "#ef4444" },
-                            { label: "Grants", amount: grants, color: "#8b5cf6" },
+                            { label: "Debt", amount: debt, color: "#4a7b8f" },
+                            { label: "Equity", amount: equity, color: "#b05445" },
+                            { label: "Grants", amount: grants, color: "#7b6b9e" },
                           ].filter((c) => c.amount > 0);
                           return (
                             <div className="pt-1.5 mt-1.5 border-t border-white/30">
@@ -565,7 +565,7 @@ export default function CalculatorPage() {
               </div>
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-0.5">Total Interest</div>
-                <div className="text-lg font-bold text-red-500 tabular-nums">{formatCompact(summaryStats.totalInterest)}</div>
+                <div className="text-lg font-bold text-danger tabular-nums">{formatCompact(summaryStats.totalInterest)}</div>
               </div>
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-0.5">Wtd. Blended Cost</div>
@@ -579,7 +579,7 @@ export default function CalculatorPage() {
           {/* Stack builder */}
           <div className="space-y-4">
             <div className="mb-1">
-              <h3 className="text-sm font-semibold text-foreground">
+              <h3 className="font-heading text-sm font-semibold text-foreground">
                 Capital Stack ({layers.length} layers)
               </h3>
             </div>
@@ -600,7 +600,7 @@ export default function CalculatorPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="bg-white rounded-xl border border-border overflow-hidden"
+                    className="bg-surface rounded-xl border border-border overflow-hidden"
                   >
                     {/* Header */}
                     <div
@@ -639,7 +639,7 @@ export default function CalculatorPage() {
                             </div>
                             <div>
                               <div className="text-[10px] text-text-tertiary">{isRBF ? "Total Premium" : "Total Interest"}</div>
-                              <div className="text-xs font-semibold text-red-500 tabular-nums">{formatCompact(sched.reduce((s, e) => s + e.interest, 0))}</div>
+                              <div className="text-xs font-semibold text-danger tabular-nums">{formatCompact(sched.reduce((s, e) => s + e.interest, 0))}</div>
                             </div>
                             <div>
                               <div className="text-[10px] text-text-tertiary">Total Paid</div>
@@ -649,7 +649,7 @@ export default function CalculatorPage() {
                         )}
                         <button
                           onClick={(e) => { e.stopPropagation(); removeLayer(idx); }}
-                          className="p-1.5 rounded-lg hover:bg-red-50 text-text-tertiary hover:text-red-500 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-danger/10 text-text-tertiary hover:text-danger transition-colors"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -858,7 +858,7 @@ export default function CalculatorPage() {
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-xl shadow-xl max-h-80 overflow-y-auto z-20"
+                    className="absolute top-full left-0 right-0 mt-2 bg-surface border border-border rounded-xl shadow-xl max-h-80 overflow-y-auto z-20"
                   >
                     {Object.entries(groupedAvailable).map(([group, items]) => (
                       <div key={group}>

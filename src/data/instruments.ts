@@ -1,6 +1,7 @@
 import { Instrument } from "./types";
+import { realWorldData } from "./realWorldData";
 
-export const instruments: Instrument[] = [
+const rawInstruments: Instrument[] = [
   // ============================================
   // CATEGORY A: GRANT-BASED INSTRUMENTS
   // ============================================
@@ -1002,3 +1003,9 @@ export const instruments: Instrument[] = [
     useCase: "Clean hydrogen hubs, direct air capture, advanced nuclear, long-duration storage",
   },
 ];
+
+// Merge real-world examples into each instrument
+export const instruments: Instrument[] = rawInstruments.map((inst) => ({
+  ...inst,
+  realWorldExamples: realWorldData[inst.slug] ?? inst.realWorldExamples,
+}));

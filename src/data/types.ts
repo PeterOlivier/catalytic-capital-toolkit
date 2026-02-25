@@ -75,6 +75,42 @@ export interface Instrument {
   // Visual
   features: string[]; // e.g. ["risk-tolerant", "concessionary", "patient"]
   useCase: string;
+
+  // Lens 6: In the Wild
+  realWorldExamples?: RealWorldExamples;
+}
+
+export type MediaType = "article" | "podcast" | "interview" | "report" | "video";
+
+export interface RealWorldProvider {
+  name: string;
+  url: string;
+  description: string;
+  notableActivity?: string;
+}
+
+export interface RealWorldDeal {
+  name: string;
+  year: number;
+  size?: string;
+  parties: string[];
+  description: string;
+  url?: string;
+}
+
+export interface RealWorldMedia {
+  title: string;
+  source: string;
+  type: MediaType;
+  url: string;
+  date?: string;
+  description?: string;
+}
+
+export interface RealWorldExamples {
+  providers: RealWorldProvider[];
+  deals: RealWorldDeal[];
+  media: RealWorldMedia[];
 }
 
 export interface CategoryInfo {
