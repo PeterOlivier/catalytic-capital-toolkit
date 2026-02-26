@@ -20,9 +20,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Catalytic Capital Toolkit",
+  title: "Climate Capital Toolkit",
   description:
-    "An interactive guide to catalytic capital instruments — understand how alternative financing works through visual, hands-on exploration.",
+    "Find the right funding for your climate project. Compare grants, loans, equity, and alternative financing side by side.",
 };
 
 export default function RootLayout({

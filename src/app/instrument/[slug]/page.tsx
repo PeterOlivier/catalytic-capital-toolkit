@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { instruments } from "@/data/instruments";
-import { CategoryBadge, categoryColorMap } from "@/components/CategoryBadge";
+import { InstrumentBadges, categoryColorMap } from "@/components/CategoryBadge";
 import { FlowDiagram } from "@/components/FlowDiagram";
 import { ReturnSpectrum } from "@/components/ReturnSpectrum";
 import { ActorMap } from "@/components/ActorMap";
@@ -112,7 +112,7 @@ export default function InstrumentPage() {
             <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
               {instrument.name}
             </h1>
-            <CategoryBadge category={instrument.category} size="md" />
+            <InstrumentBadges category={instrument.category} terms={instrument.terms} size="md" />
           </div>
           <p className="text-base text-text-secondary leading-relaxed max-w-3xl">
             {instrument.description}

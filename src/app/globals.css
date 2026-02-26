@@ -17,14 +17,18 @@
   --danger: #b05445;           /* muted vermilion */
   --info: #4a7b8f;             /* muted teal */
 
-  /* Category colors — nature-inspired, muted like woodblock pigments */
+  /* Type colors — the financial mechanism */
   --cat-grant: #7b6b9e;        /* muted wisteria purple */
   --cat-debt: #3e6b8a;         /* Prussian blue, muted */
   --cat-guarantee: #5a8a6e;    /* pine/moss green */
   --cat-equity: #b05445;       /* burnt vermilion */
   --cat-hybrid: #c9973a;       /* warm ochre-amber */
-  --cat-government: #5c6b78;   /* steel slate */
-  --cat-conventional: #4a7b8f; /* ocean teal */
+
+  /* Terms colors — the deal structure */
+  --terms-concessionary: #7b6b9e; /* wisteria — catalytic, subsidized */
+  --terms-alternative: #c9973a;   /* amber — non-traditional */
+  --terms-conventional: #4a7b8f;  /* ocean teal — standard market */
+  --terms-government: #5c6b78;    /* steel slate — public sector */
 }
 
 @theme inline {
@@ -47,8 +51,10 @@
   --color-cat-guarantee: var(--cat-guarantee);
   --color-cat-equity: var(--cat-equity);
   --color-cat-hybrid: var(--cat-hybrid);
-  --color-cat-government: var(--cat-government);
-  --color-cat-conventional: var(--cat-conventional);
+  --color-terms-concessionary: var(--terms-concessionary);
+  --color-terms-alternative: var(--terms-alternative);
+  --color-terms-conventional: var(--terms-conventional);
+  --color-terms-government: var(--terms-government);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-playfair);

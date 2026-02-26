@@ -315,12 +315,12 @@ export default function CalculatorPage() {
   const groupedAvailable = useMemo(() => {
     const groups: Record<string, typeof stackInstruments> = {};
     stackInstruments.forEach((inst) => {
-      const label =
-        inst.category === "conventional"
-          ? "Conventional"
-          : inst.category === "equity"
-          ? "Equity"
-          : "Catalytic / Alternative";
+      const conventionalIds = new Set(["term-loan", "sba-loan", "equipment-financing", "line-of-credit", "commercial-mortgage", "venture-debt", "mezzanine-debt"]);
+      const label = conventionalIds.has(inst.id)
+        ? "Conventional"
+        : inst.isEquity
+        ? "Equity"
+        : "Catalytic / Alternative";
       if (!groups[label]) groups[label] = [];
       groups[label].push(inst);
     });

@@ -4,8 +4,8 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { instruments } from "@/data/instruments";
-import { Category, CATEGORIES } from "@/data/types";
-import { CategoryBadge, categoryColorMap } from "@/components/CategoryBadge";
+import { Category, Terms, CATEGORIES, TERMS_LIST } from "@/data/types";
+import { InstrumentBadges, categoryColorMap, termsColorMap } from "@/components/CategoryBadge";
 import {
   Search,
   ArrowRight,
@@ -27,25 +27,36 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Building2,
 };
 
-const riskColors: Record<string, string> = {
-  "very-low": "bg-[#5a8a6e]/15 text-[#5a8a6e]",
-  low: "bg-[#5a8a6e]/10 text-[#5a8a6e]",
-  moderate: "bg-[#c9973a]/15 text-[#c9973a]",
-  high: "bg-[#b05445]/12 text-[#b05445]",
-  "very-high": "bg-[#b05445]/20 text-[#b05445]",
+const speedColors: Record<string, string> = {
+  weeks: "bg-[#5a8a6e]/15 text-[#5a8a6e]",
+  "1-3-months": "bg-[#5a8a6e]/10 text-[#5a8a6e]",
+  "3-6-months": "bg-[#c9973a]/15 text-[#c9973a]",
+  "6-12-months": "bg-[#b05445]/12 text-[#b05445]",
 };
 
-const riskLabels: Record<string, string> = {
-  "very-low": "Very Low",
+const speedLabels: Record<string, string> = {
+  weeks: "Weeks",
+  "1-3-months": "1–3 mo",
+  "3-6-months": "3–6 mo",
+  "6-12-months": "6–12+ mo",
+};
+
+const complexityColors: Record<string, string> = {
+  low: "bg-[#5a8a6e]/15 text-[#5a8a6e]",
+  medium: "bg-[#c9973a]/15 text-[#c9973a]",
+  high: "bg-[#b05445]/12 text-[#b05445]",
+};
+
+const complexityLabels: Record<string, string> = {
   low: "Low",
-  moderate: "Moderate",
+  medium: "Medium",
   high: "High",
-  "very-high": "Very High",
 };
 
 export default function Home() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<Category | "all">("all");
+  const [activeTerms, setActiveTerms] = useState<Terms | "all">("all");
 
   const filtered = useMemo(() => {
     return instruments.filter((inst) => {
@@ -56,14 +67,24 @@ export default function Home() {
         inst.description.toLowerCase().includes(search.toLowerCase());
       const matchesCat =
         activeCategory === "all" || inst.category === activeCategory;
-      return matchesSearch && matchesCat;
+      const matchesTerms =
+        activeTerms === "all" || inst.terms === activeTerms;
+      return matchesSearch && matchesCat && matchesTerms;
     });
-  }, [search, activeCategory]);
+  }, [search, activeCategory, activeTerms]);
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { all: instruments.length };
     instruments.forEach((inst) => {
       counts[inst.category] = (counts[inst.category] || 0) + 1;
+    });
+    return counts;
+  }, []);
+
+  const termsCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: instruments.length };
+    instruments.forEach((inst) => {
+      counts[inst.terms] = (counts[inst.terms] || 0) + 1;
     });
     return counts;
   }, []);
@@ -75,16 +96,16 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 xl:px-20 pt-16 pb-12">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 text-accent text-sm font-medium mb-8">
-              23 instruments across 6 categories
+              {instruments.length} instruments — {new Set(instruments.map(i => i.category)).size} types, {new Set(instruments.map(i => i.terms)).size} terms
             </div>
             <h1 className="font-heading text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-5">
-              The Catalytic Capital{" "}
+              The Climate Capital{" "}
               <span className="text-accent italic">Toolkit</span>
             </h1>
             <p className="text-lg sm:text-xl text-text-secondary leading-relaxed max-w-2xl">
-              Explore every major type of catalytic and alternative capital.
-              Understand who puts money in, what they get back, what happens when
-              things go wrong, and how much it all costs.
+              Explore every major type of catalytic, alternative, and conventional capital.
+              Compare instruments side-by-side — who puts money in, what they get back,
+              what happens when things go wrong, and how much it all costs.
             </p>
           </div>
         </div>
@@ -105,42 +126,71 @@ export default function Home() {
             />
           </div>
 
-          {/* Category pills */}
+          {/* Type filter */}
           <div className="flex gap-2 overflow-x-auto scrollbar-none sm:flex-wrap sm:overflow-visible pb-1 sm:pb-0 -mx-6 px-6 sm:mx-0 sm:px-0">
+            <span className="flex-shrink-0 text-xs font-medium text-text-tertiary uppercase tracking-wider self-center mr-1">Type</span>
             <button
               onClick={() => setActiveCategory("all")}
-              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-all ${
                 activeCategory === "all"
                   ? "bg-foreground text-[#f5f0e8]"
                   : "bg-surface-secondary text-text-secondary hover:bg-border"
               }`}
             >
-              All{" "}
-              <span className="opacity-60 ml-1">{categoryCounts.all}</span>
+              All
             </button>
-            {CATEGORIES.filter((cat) => categoryCounts[cat.id]).map((cat) => {
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                    activeCategory === cat.id
-                      ? "text-white"
-                      : "bg-surface-secondary text-text-secondary hover:bg-border"
-                  }`}
-                  style={
-                    activeCategory === cat.id
-                      ? { backgroundColor: categoryColorMap[cat.id] }
-                      : undefined
-                  }
-                >
-                  {cat.name}
-                  <span className="opacity-60 ml-0.5">
-                    {categoryCounts[cat.id] || 0}
-                  </span>
-                </button>
-              );
-            })}
+            {CATEGORIES.filter((cat) => categoryCounts[cat.id]).map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                  activeCategory === cat.id
+                    ? "text-white"
+                    : "bg-surface-secondary text-text-secondary hover:bg-border"
+                }`}
+                style={
+                  activeCategory === cat.id
+                    ? { backgroundColor: categoryColorMap[cat.id] }
+                    : undefined
+                }
+              >
+                {cat.name}
+                <span className="opacity-60">{categoryCounts[cat.id] || 0}</span>
+              </button>
+            ))}
+          </div>
+          {/* Terms filter */}
+          <div className="flex gap-2 overflow-x-auto scrollbar-none sm:flex-wrap sm:overflow-visible pb-1 sm:pb-0 -mx-6 px-6 sm:mx-0 sm:px-0 mt-2">
+            <span className="flex-shrink-0 text-xs font-medium text-text-tertiary uppercase tracking-wider self-center mr-1">Terms</span>
+            <button
+              onClick={() => setActiveTerms("all")}
+              className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                activeTerms === "all"
+                  ? "bg-foreground text-[#f5f0e8]"
+                  : "bg-surface-secondary text-text-secondary hover:bg-border"
+              }`}
+            >
+              All
+            </button>
+            {TERMS_LIST.filter((t) => termsCounts[t.id]).map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setActiveTerms(t.id)}
+                className={`flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                  activeTerms === t.id
+                    ? "text-white"
+                    : "bg-surface-secondary text-text-secondary hover:bg-border"
+                }`}
+                style={
+                  activeTerms === t.id
+                    ? { backgroundColor: termsColorMap[t.id] }
+                    : undefined
+                }
+              >
+                {t.name}
+                <span className="opacity-60">{termsCounts[t.id] || 0}</span>
+              </button>
+            ))}
           </div>
         </div>
       </section>
@@ -167,15 +217,15 @@ export default function Home() {
                     <h3 className="font-heading text-base font-semibold text-foreground group-hover:text-accent transition-colors">
                       {inst.name}
                     </h3>
-                    <CategoryBadge category={inst.category} size="sm" />
+                    <InstrumentBadges category={inst.category} terms={inst.terms} size="sm" />
                   </div>
                   <p className="text-sm text-text-secondary mb-4 leading-relaxed">
                     {inst.tagline}
                   </p>
 
                   {/* Stats row */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex-1 min-w-0">
                       <div className="text-[11px] uppercase tracking-wider text-text-tertiary mb-0.5">
                         Cost
                       </div>
@@ -184,25 +234,36 @@ export default function Home() {
                       </div>
                     </div>
                     <div className="w-px h-8 bg-border" />
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="text-[11px] uppercase tracking-wider text-text-tertiary mb-0.5">
-                        Typical Size
+                        Size
                       </div>
-                      <div className="text-sm font-semibold text-foreground">
-                        {inst.typicalSize.length > 18
-                          ? inst.typicalSize.split("(")[0].trim()
+                      <div className="text-sm font-semibold text-foreground truncate">
+                        {inst.typicalSize.length > 14
+                          ? inst.typicalSize.split("(")[0].trim().split(" - ")[1] || inst.typicalSize.split("(")[0].trim()
                           : inst.typicalSize}
                       </div>
                     </div>
                     <div className="w-px h-8 bg-border" />
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="text-[11px] uppercase tracking-wider text-text-tertiary mb-0.5">
-                        Risk
+                        Speed
                       </div>
                       <span
-                        className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${riskColors[inst.riskLevel]}`}
+                        className={`inline-block text-xs font-medium px-1.5 py-0.5 rounded-full ${speedColors[inst.speed]}`}
                       >
-                        {riskLabels[inst.riskLevel]}
+                        {speedLabels[inst.speed]}
+                      </span>
+                    </div>
+                    <div className="w-px h-8 bg-border" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[11px] uppercase tracking-wider text-text-tertiary mb-0.5">
+                        Complexity
+                      </div>
+                      <span
+                        className={`inline-block text-xs font-medium px-1.5 py-0.5 rounded-full ${complexityColors[inst.complexity]}`}
+                      >
+                        {complexityLabels[inst.complexity]}
                       </span>
                     </div>
                   </div>
@@ -245,6 +306,7 @@ export default function Home() {
               onClick={() => {
                 setSearch("");
                 setActiveCategory("all");
+                setActiveTerms("all");
               }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 text-accent text-sm font-medium hover:bg-accent/20 transition-colors"
             >

@@ -456,4 +456,200 @@ export const realWorldData: Record<string, RealWorldExamples> = {
       { title: "Demonstrating Clean Energy at Scale", source: "DOE", type: "report", url: "https://www.energy.gov/oced", date: "2024", description: "OCED's framework for selecting and managing first-of-a-kind demonstration projects." },
     ],
   },
+
+  // ============================================
+  // CONVENTIONAL INSTRUMENTS
+  // ============================================
+  "term-loan": {
+    providers: [
+      { name: "JPMorgan Chase Commercial Banking", url: "https://www.jpmorgan.com/commercial-banking", description: "Largest U.S. bank by assets, offering commercial term loans, lines of credit, and treasury services to businesses of all sizes.", notableActivity: "$200B+ in commercial lending annually" },
+      { name: "Bank of America Business Lending", url: "https://www.bankofamerica.com/smallbusiness/", description: "Major commercial lender with nationwide branch network and digital lending platform for businesses.", notableActivity: "#2 U.S. commercial lender by volume" },
+      { name: "OnDeck (a division of Enova)", url: "https://www.ondeck.com", description: "Online lending platform providing term loans to small businesses with faster underwriting than traditional banks.", notableActivity: "$14B+ in small business loans originated since founding" },
+    ],
+    deals: [
+      { name: "Main Street Lending Program", year: 2020, size: "$600B facility", parties: ["Federal Reserve", "U.S. Banks", "Mid-Market Companies"], description: "Emergency Fed-backed lending program providing term loans to mid-size businesses during COVID-19, demonstrating how traditional bank lending infrastructure can be rapidly scaled during crises.", url: "https://www.federalreserve.gov/monetarypolicy/mainstreetlending.htm" },
+      { name: "JPMorgan $10B Racial Equity Commitment", year: 2020, size: "$10B", parties: ["JPMorgan Chase", "Small Business Borrowers"], description: "Bank commitment to expand commercial lending to Black and Latino communities, including term loans with reduced rates and expanded eligibility criteria.", url: "https://www.jpmorganchase.com/impact/racialequity" },
+    ],
+    media: [
+      { title: "State of Small Business Lending", source: "Federal Reserve Banks", type: "report", url: "https://www.fedsmallbusiness.org", date: "2024", description: "Annual survey of small business credit conditions, approval rates, and lender market share." },
+      { title: "How Banks Decide Who Gets a Business Loan", source: "NerdWallet", type: "article", url: "https://www.nerdwallet.com/article/small-business/how-to-get-a-business-loan", date: "2024", description: "Guide to bank underwriting criteria, documentation requirements, and tips for approval." },
+    ],
+  },
+
+  "sba-loan": {
+    providers: [
+      { name: "Live Oak Bank", url: "https://www.liveoakbank.com", description: "Digital-first bank and #1 SBA 7(a) lender by number of loans, specializing in industry-specific small business lending.", notableActivity: "#1 SBA 7(a) lender nationally" },
+      { name: "Huntington National Bank", url: "https://www.huntington.com/smallbusiness", description: "Top SBA lender by dollar volume with strong Midwest presence, offering SBA 7(a) and 504 programs.", notableActivity: "Consistently top 3 SBA lender by volume" },
+      { name: "Celtic Bank", url: "https://www.celticbank.com", description: "Industrial bank focused on SBA lending with expertise in franchise and healthcare practice financing.", notableActivity: "Top 10 SBA 7(a) lender" },
+    ],
+    deals: [
+      { name: "SBA 7(a) FY2023 Performance", year: 2023, size: "$27.5B in approvals", parties: ["SBA", "Thousands of Participating Lenders"], description: "Record year for SBA 7(a) program with over 57,000 loans approved, demonstrating the program's scale and reach across every U.S. state and territory.", url: "https://www.sba.gov/about-sba/sba-performance" },
+      { name: "COVID EIDL Program", year: 2020, size: "$390B", parties: ["SBA", "3.9M Small Businesses"], description: "Largest economic relief lending program in U.S. history, providing low-interest SBA loans directly to small businesses affected by the pandemic.", url: "https://www.sba.gov/funding-programs/disaster-assistance" },
+    ],
+    media: [
+      { title: "SBA Lending 101 for Small Businesses", source: "Forbes Advisor", type: "article", url: "https://www.forbes.com/advisor/business-loans/sba-loans/", date: "2024", description: "Comprehensive guide to SBA loan programs, eligibility, and the application process." },
+      { title: "Annual Small Business Lending Report", source: "SBA Office of Advocacy", type: "report", url: "https://advocacy.sba.gov", date: "2024", description: "Annual analysis of SBA lending trends, demographics, and economic impact." },
+    ],
+  },
+
+  "equipment-financing": {
+    providers: [
+      { name: "CIT Group (First Citizens BancShares)", url: "https://www.cit.com", description: "Major equipment finance company serving middle-market businesses across industries including manufacturing, transportation, and technology.", notableActivity: "$60B+ in managed assets" },
+      { name: "John Deere Financial", url: "https://www.deere.com/en/finance/", description: "Captive finance arm of John Deere, providing equipment financing and leasing for agricultural and construction equipment.", notableActivity: "$50B+ financing portfolio" },
+      { name: "GATX Corporation", url: "https://www.gatx.com", description: "Specialized railcar and industrial equipment leasing company with over 125 years of operating history.", notableActivity: "130,000+ railcars and industrial assets under management" },
+    ],
+    deals: [
+      { name: "U.S. Equipment Finance Market (Annual)", year: 2023, size: "$1.2T outstanding", parties: ["Banks", "Equipment Finance Cos", "Captive Finance", "U.S. Businesses"], description: "The U.S. equipment finance market represents over $1.2 trillion in outstanding balances, financing approximately 80% of all business equipment acquisitions.", url: "https://www.elfaonline.org/research" },
+      { name: "Caterpillar Financial Q4 2023", year: 2023, size: "$37.3B portfolio", parties: ["Caterpillar Financial Services", "Construction & Mining Companies"], description: "Caterpillar's financial arm manages a $37.3B portfolio of equipment loans and leases, demonstrating how manufacturer financing enables equipment acquisition globally." },
+    ],
+    media: [
+      { title: "Equipment Leasing and Finance Industry Outlook", source: "ELFA", type: "report", url: "https://www.elfaonline.org", date: "2024", description: "Annual industry forecast from the Equipment Leasing and Finance Association." },
+      { title: "Buy vs. Lease Equipment: Making the Right Choice", source: "Inc. Magazine", type: "article", url: "https://www.inc.com", date: "2023", description: "Framework for deciding between equipment purchase financing and operating leases." },
+    ],
+  },
+
+  "line-of-credit": {
+    providers: [
+      { name: "Wells Fargo Commercial Banking", url: "https://www.wellsfargo.com/biz/", description: "One of the largest providers of business lines of credit in the U.S., serving businesses from small enterprises to large corporations.", notableActivity: "Top 3 U.S. commercial lender" },
+      { name: "Kabbage (American Express)", url: "https://www.kabbage.com", description: "Online platform providing automated lines of credit to small businesses using real-time data for underwriting.", notableActivity: "Acquired by American Express in 2020; $9B+ in funding provided" },
+      { name: "BlueVine", url: "https://www.bluevine.com", description: "Fintech company offering business lines of credit with fast approval and flexible draw-down, popular with small businesses.", notableActivity: "$13B+ in total financing to 500,000+ businesses" },
+    ],
+    deals: [
+      { name: "Revolving Credit Market Size", year: 2023, size: "$2.4T commitments", parties: ["U.S. Banks", "Corporate Borrowers"], description: "U.S. revolving credit commitments from banks total over $2.4 trillion, making lines of credit one of the most widely used commercial financing instruments.", url: "https://www.federalreserve.gov/data.htm" },
+    ],
+    media: [
+      { title: "How Business Lines of Credit Work", source: "Bankrate", type: "article", url: "https://www.bankrate.com/loans/small-business/business-line-of-credit/", date: "2024", description: "Comprehensive guide to business lines of credit including types, rates, and qualification criteria." },
+      { title: "Fed Senior Loan Officer Survey", source: "Federal Reserve", type: "report", url: "https://www.federalreserve.gov/data/sloos.htm", date: "2024", description: "Quarterly survey tracking bank lending standards for commercial lines of credit and other business loans." },
+    ],
+  },
+
+  "commercial-mortgage": {
+    providers: [
+      { name: "Wells Fargo Commercial Real Estate", url: "https://www.wellsfargo.com/com/real-estate/", description: "Top commercial real estate lender in the U.S., providing construction, permanent, and bridge financing for all property types.", notableActivity: "#1 U.S. commercial real estate lender by servicing volume" },
+      { name: "CBRE Capital Markets", url: "https://www.cbre.com/services/capital-markets", description: "World's largest commercial real estate services firm with debt and equity placement services.", notableActivity: "Arranges $60B+ in commercial mortgages annually" },
+      { name: "MetLife Investment Management", url: "https://investments.metlife.com", description: "Institutional investor deploying insurance company general account capital into commercial mortgages and real assets.", notableActivity: "$150B+ in real estate debt portfolio" },
+    ],
+    deals: [
+      { name: "Hudson Yards Financing", year: 2017, size: "$20B total development", parties: ["Related Companies", "Oxford Properties", "Multiple Lenders"], description: "Largest private real estate development in U.S. history, financed through multiple tranches of commercial mortgages, construction loans, and EB-5 investments on Manhattan's West Side." },
+      { name: "Blackstone Real Estate Debt Strategies", year: 2023, size: "$72B AUM", parties: ["Blackstone", "Institutional Investors", "Property Owners"], description: "Blackstone's real estate debt platform demonstrates the scale of institutional capital deployed in commercial mortgage markets across property types." },
+    ],
+    media: [
+      { title: "Commercial Real Estate Lending Trends", source: "Mortgage Bankers Association", type: "report", url: "https://www.mba.org/research-and-resources", date: "2024", description: "Quarterly survey of commercial real estate lending origination volumes and property type breakdowns." },
+      { title: "State of the CRE Market", source: "CBRE Research", type: "report", url: "https://www.cbre.com/insights/books/us-real-estate-market-outlook-2024", date: "2024", description: "Annual outlook on U.S. commercial real estate fundamentals, cap rates, and financing availability." },
+    ],
+  },
+
+  "venture-debt": {
+    providers: [
+      { name: "Hercules Capital", url: "https://www.htgc.com", description: "Publicly traded BDC and leading venture lending firm providing growth capital to technology and life science companies.", notableActivity: "$18B+ in venture debt commitments since inception" },
+      { name: "Western Technology Investment", url: "https://www.westerntech.com", description: "One of the original venture lending firms, providing growth-stage debt to technology companies since 1980.", notableActivity: "Pioneered venture lending as an asset class" },
+      { name: "Silicon Valley Bank (First Citizens)", url: "https://www.svb.com", description: "The iconic startup bank providing venture debt, working capital, and banking services to innovation economy companies.", notableActivity: "Banked ~50% of U.S. VC-backed companies prior to 2023" },
+    ],
+    deals: [
+      { name: "Hercules Capital Q4 2023 Portfolio", year: 2023, size: "$3.4B outstanding", parties: ["Hercules Capital", "Growth-Stage Tech Companies"], description: "Hercules maintains a $3.4B venture debt portfolio across hundreds of technology and life science companies, demonstrating the scale of the venture lending market." },
+      { name: "Airbnb Venture Debt", year: 2016, size: "$1B", parties: ["JPMorgan", "Citigroup", "Morgan Stanley", "Airbnb"], description: "Pre-IPO venture debt facility that allowed Airbnb to fund operations and growth without additional equity dilution during its late-stage growth phase." },
+    ],
+    media: [
+      { title: "The Venture Lending Landscape", source: "PitchBook", type: "report", url: "https://pitchbook.com", date: "2024", description: "Analysis of venture debt deal volume, terms, and the evolving role of non-dilutive capital in the startup ecosystem." },
+      { title: "When to Consider Venture Debt", source: "TechCrunch", type: "article", url: "https://techcrunch.com", date: "2023", description: "Practical guide for startup founders on when venture debt makes sense vs. equity fundraising." },
+    ],
+  },
+
+  "mezzanine-debt": {
+    providers: [
+      { name: "Golub Capital", url: "https://www.golubcapital.com", description: "Leading middle-market lender providing one-stop senior and mezzanine financing for private equity-backed companies.", notableActivity: "$70B+ in capital under management" },
+      { name: "Ares Capital Corporation", url: "https://www.arescapitalcorp.com", description: "Largest publicly traded BDC, providing mezzanine and subordinated debt to middle-market companies.", notableActivity: "$21B+ investment portfolio" },
+      { name: "Monroe Capital", url: "https://www.monroecap.com", description: "Private credit firm specializing in mezzanine, unitranche, and junior capital solutions for middle-market companies.", notableActivity: "$18.2B in assets under management" },
+    ],
+    deals: [
+      { name: "KKR Credit Mezzanine Fund", year: 2023, size: "$2.2B", parties: ["KKR", "Institutional LPs", "Middle-Market Companies"], description: "KKR raised a dedicated mezzanine fund demonstrating institutional appetite for the subordinated debt asset class as private credit expands." },
+      { name: "Apollo Accord Fund Series", year: 2022, size: "$12B+", parties: ["Apollo Global", "Insurance Co Capital", "Middle-Market Borrowers"], description: "Apollo's credit platform deploys insurance company capital into mezzanine and structured credit, illustrating the convergence of insurance and private lending." },
+    ],
+    media: [
+      { title: "The Rise of Private Credit", source: "McKinsey Global Institute", type: "report", url: "https://www.mckinsey.com/industries/private-equity-and-principal-investors", date: "2024", description: "Analysis of how private credit (including mezzanine) has grown from niche to a $1.5T+ asset class." },
+      { title: "Mezzanine Finance Explained", source: "Harvard Business School", type: "article", url: "https://www.hbs.edu", date: "2023", description: "Academic framework for understanding mezzanine's role in capital structures and leverage optimization." },
+    ],
+  },
+
+  "vc-equity": {
+    providers: [
+      { name: "Andreessen Horowitz (a16z)", url: "https://a16z.com", description: "Top-tier venture capital firm investing across stages from seed to growth in software, bio, crypto, and more.", notableActivity: "$35B+ in assets under management" },
+      { name: "Sequoia Capital", url: "https://www.sequoiacap.com", description: "Legendary VC firm backing companies from seed through IPO, with portfolio companies worth over $3.3 trillion in aggregate.", notableActivity: "Backed Apple, Google, Airbnb, Stripe, and more" },
+      { name: "General Atlantic", url: "https://www.generalatlantic.com", description: "Global growth equity firm investing in technology, healthcare, consumer, and financial services companies.", notableActivity: "$84B+ in assets under management" },
+    ],
+    deals: [
+      { name: "OpenAI Series E", year: 2024, size: "$6.6B", parties: ["Thrive Capital", "Microsoft", "NVIDIA", "SoftBank", "OpenAI"], description: "Largest VC round in history at the time, valuing OpenAI at $157B — exemplifying the scale of modern venture capital at the growth stage." },
+      { name: "Stripe Series I", year: 2023, size: "$6.5B", parties: ["Andreessen Horowitz", "Baillie Gifford", "Founders Fund", "Stripe"], description: "Payments company raised at $50B valuation to provide liquidity to employees, demonstrating how late-stage VC enables liquidity without IPO." },
+    ],
+    media: [
+      { title: "Global Venture Capital Annual Report", source: "PitchBook-NVCA", type: "report", url: "https://pitchbook.com/news/reports/nvca-venture-monitor", date: "2024", description: "Definitive annual analysis of VC fundraising, deal activity, and exit trends across the global venture ecosystem." },
+      { title: "Venture Capital and the Finance of Innovation", source: "Harvard Business Review", type: "article", url: "https://hbr.org", date: "2023", description: "Framework for understanding how VC funding works from both the founder and investor perspective." },
+    ],
+  },
+
+  "angel-seed": {
+    providers: [
+      { name: "AngelList", url: "https://www.angellist.com", description: "Platform powering angel investing infrastructure — syndicates, rolling funds, and venture fund administration for thousands of angels.", notableActivity: "$12B+ in assets under management across the platform" },
+      { name: "Y Combinator", url: "https://www.ycombinator.com", description: "World's most prolific startup accelerator, providing $500K in seed funding to ~400 companies per year via standardized SAFE notes.", notableActivity: "4,000+ funded companies; $600B+ combined valuation" },
+      { name: "Techstars", url: "https://www.techstars.com", description: "Global accelerator network providing $120K in seed funding alongside intensive 3-month mentorship programs.", notableActivity: "3,500+ companies funded across 50+ programs worldwide" },
+    ],
+    deals: [
+      { name: "Y Combinator W24 Batch", year: 2024, size: "$500K per company × 270 companies", parties: ["Y Combinator", "270 Startups"], description: "Single cohort deploying ~$135M in standardized SAFE investments, demonstrating how programmatic seed investing works at scale." },
+      { name: "AngelList Syndicates Milestone", year: 2023, size: "$3.5B+ invested", parties: ["AngelList", "10,000+ Angel Investors", "Thousands of Startups"], description: "AngelList syndicates passed $3.5B in total investments, showing how technology has democratized angel investing beyond traditional networks." },
+    ],
+    media: [
+      { title: "Angel Investing Returns Data", source: "Angel Capital Association", type: "report", url: "https://www.angelcapitalassociation.org", date: "2023", description: "Research on angel investment returns showing portfolio-level returns of 2.5x over 3.5 years for diversified angel portfolios." },
+      { title: "The SAFE Revolution", source: "TechCrunch", type: "article", url: "https://techcrunch.com", date: "2024", description: "How Y Combinator's SAFE note transformed early-stage fundraising by replacing complex priced rounds." },
+    ],
+  },
+
+  "crowdfunding": {
+    providers: [
+      { name: "Kickstarter", url: "https://www.kickstarter.com", description: "Leading reward-based crowdfunding platform for creative projects, product launches, and community-backed ventures.", notableActivity: "$7.6B+ pledged to 240,000+ projects since 2009" },
+      { name: "Wefunder", url: "https://wefunder.com", description: "Top equity crowdfunding platform under Reg CF, enabling non-accredited investors to buy equity in startups.", notableActivity: "$800M+ invested by 2.5M+ investors" },
+      { name: "Republic", url: "https://republic.com", description: "Investment platform offering equity crowdfunding, real estate, and crypto investments to retail investors.", notableActivity: "$2.5B+ in investments across platform" },
+    ],
+    deals: [
+      { name: "Pebble Smartwatch", year: 2012, size: "$10.3M (target: $100K)", parties: ["Pebble Technology", "68,929 Kickstarter Backers"], description: "One of the earliest crowdfunding mega-successes — exceeded its goal by 102x, validating market demand for smartwatches before the Apple Watch existed." },
+      { name: "Wefunder Reg CF Milestone", year: 2023, size: "$500M+ total raised", parties: ["Wefunder", "Startups", "Non-Accredited Investors"], description: "Wefunder passed $500M in total crowdfunding investments, demonstrating that retail investors will deploy meaningful capital into startups when given access." },
+    ],
+    media: [
+      { title: "SEC Regulation Crowdfunding Annual Report", source: "SEC", type: "report", url: "https://www.sec.gov/education/smallbusiness/exemptofferings/regcrowdfunding", date: "2024", description: "SEC data on Reg CF filings, amounts raised, and investor demographics." },
+      { title: "Crowdfunding vs. Traditional Fundraising", source: "Harvard Business Review", type: "article", url: "https://hbr.org", date: "2023", description: "Analysis of when crowdfunding outperforms traditional fundraising and the signal value of crowd support." },
+    ],
+  },
+
+  "invoice-factoring": {
+    providers: [
+      { name: "BlueVine", url: "https://www.bluevine.com", description: "Fintech company offering invoice factoring and lines of credit to small businesses, with fast automated underwriting.", notableActivity: "$13B+ in total financing to 500,000+ businesses" },
+      { name: "Riviera Finance", url: "https://www.rivierafinance.com", description: "National factoring company specializing in accounts receivable financing for small and mid-size businesses since 1969.", notableActivity: "55+ years in invoice factoring" },
+      { name: "Triumph Financial (formerly Triumph Bancorp)", url: "https://www.triumphfinancial.com", description: "Specialty financial company focused on factoring for the transportation and logistics industry.", notableActivity: "Largest factoring company in U.S. trucking industry" },
+    ],
+    deals: [
+      { name: "U.S. Factoring Market", year: 2023, size: "$150B+ annual volume", parties: ["Factoring Companies", "Banks", "U.S. Businesses"], description: "The U.S. factoring market processes over $150B in receivables annually, serving as critical working capital infrastructure for businesses with long payment cycles." },
+      { name: "Triumph Financial Trucking Portfolio", year: 2023, size: "$3B+ annual purchases", parties: ["Triumph Financial", "Trucking Companies"], description: "Triumph purchases over $3B in freight invoices annually, enabling trucking companies to get paid in days rather than waiting 30-90 days for shippers to pay." },
+    ],
+    media: [
+      { title: "Factoring: The Original Fintech", source: "Forbes", type: "article", url: "https://www.forbes.com", date: "2023", description: "How invoice factoring has evolved from a medieval banking practice to a modern fintech product." },
+      { title: "Trade Finance Gap Report", source: "Asian Development Bank", type: "report", url: "https://www.adb.org", date: "2023", description: "Global analysis of the trade finance gap showing $2.5T in unmet demand, much of which factoring could address." },
+    ],
+  },
+
+  "project-finance": {
+    providers: [
+      { name: "MUFG (Mitsubishi UFJ Financial Group)", url: "https://www.mufg.jp/english/", description: "World's largest project finance bank, consistently #1 in global league tables for project finance advisory and lending.", notableActivity: "#1 global project finance lender (PFI league tables)" },
+      { name: "Brookfield Infrastructure", url: "https://www.brookfield.com/our-businesses/infrastructure", description: "One of the world's largest infrastructure investors, deploying both equity and debt capital into large-scale projects globally.", notableActivity: "$188B infrastructure AUM" },
+      { name: "ING Wholesale Banking", url: "https://www.ingwb.com", description: "Major European bank with a leading project finance practice across energy, infrastructure, and transportation.", notableActivity: "Top 5 global project finance arranger" },
+    ],
+    deals: [
+      { name: "Hornsea 3 Offshore Wind Farm", year: 2024, size: "$11B+ total cost", parties: ["Ørsted", "Multiple Project Finance Banks", "UK Government"], description: "One of the world's largest offshore wind farms, financed through non-recourse project finance with SPV structure isolating risk from sponsor balance sheets." },
+      { name: "SemCAMS Midstream Pipeline", year: 2022, size: "$2.5B", parties: ["KKR", "AIMCo", "Project Finance Lenders"], description: "Canadian natural gas processing and pipeline infrastructure financed through a combination of project finance debt and sponsor equity." },
+      { name: "Vineyard Wind 1", year: 2023, size: "$2.3B", parties: ["Avangrid", "Copenhagen Infrastructure Partners", "Project Finance Banks"], description: "First large-scale U.S. offshore wind project, financed with project finance structures combining tax equity, project debt, and sponsor equity." },
+    ],
+    media: [
+      { title: "Global Project Finance Review", source: "Project Finance International (PFI)", type: "report", url: "https://www.pfie.com", date: "2024", description: "Annual review of global project finance deal volume, sector breakdowns, and pricing trends." },
+      { title: "Project Finance: A Primer", source: "Harvard Business School", type: "article", url: "https://www.hbs.edu", date: "2023", description: "Educational framework explaining non-recourse project finance structures and when they're appropriate vs. corporate finance." },
+      { title: "The Energy Transition and Project Finance", source: "BloombergNEF", type: "report", url: "https://about.bnef.com", date: "2024", description: "Analysis of how project finance is enabling the clean energy transition at scale, with record volumes for renewables." },
+    ],
+  },
 };

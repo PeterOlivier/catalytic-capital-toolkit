@@ -3,9 +3,13 @@ export type Category =
   | "debt"
   | "guarantee"
   | "equity"
-  | "hybrid"
-  | "government"
-  | "conventional";
+  | "hybrid";
+
+export type Terms =
+  | "concessionary"
+  | "alternative"
+  | "conventional"
+  | "government";
 
 export interface Actor {
   name: string;
@@ -38,6 +42,7 @@ export interface Instrument {
   name: string;
   shortName: string;
   category: Category;
+  terms: Terms;
   number: number;
   tagline: string;
   description: string;
@@ -59,6 +64,8 @@ export interface Instrument {
   };
   nonFinancialReturns: string[];
   riskLevel: "very-low" | "low" | "moderate" | "high" | "very-high";
+  speed: "weeks" | "1-3-months" | "3-6-months" | "6-12-months";
+  complexity: "low" | "medium" | "high";
 
   // Lens 3: Who else is involved
   actors: Actor[];
@@ -124,30 +131,30 @@ export interface CategoryInfo {
 export const CATEGORIES: CategoryInfo[] = [
   {
     id: "grant",
-    name: "Grant-Based",
+    name: "Grant",
     color: "var(--cat-grant)",
-    description: "Non-repayable funding deployed for impact",
+    description: "Non-repayable funding",
     icon: "Gift",
   },
   {
     id: "debt",
     name: "Debt",
     color: "var(--cat-debt)",
-    description: "Loans and lending with concessionary terms",
+    description: "Repayable capital — loans and lending",
     icon: "Landmark",
   },
   {
     id: "guarantee",
-    name: "Guarantees",
+    name: "Guarantee",
     color: "var(--cat-guarantee)",
-    description: "Backstops that absorb risk for others",
+    description: "Risk backstops and insurance",
     icon: "Shield",
   },
   {
     id: "equity",
     name: "Equity",
     color: "var(--cat-equity)",
-    description: "Ownership stakes with catalytic terms",
+    description: "Ownership stakes",
     icon: "TrendingUp",
   },
   {
@@ -157,19 +164,39 @@ export const CATEGORIES: CategoryInfo[] = [
     description: "Multi-layered and outcomes-based structures",
     icon: "Layers",
   },
+];
+
+export interface TermsInfo {
+  id: Terms;
+  name: string;
+  color: string;
+  description: string;
+}
+
+export const TERMS_LIST: TermsInfo[] = [
   {
-    id: "government",
-    name: "Government",
-    color: "var(--cat-government)",
-    description: "Public-sector financing and incentives",
-    icon: "Building2",
+    id: "concessionary",
+    name: "Concessionary",
+    color: "var(--terms-concessionary)",
+    description: "Below-market terms designed to absorb risk",
+  },
+  {
+    id: "alternative",
+    name: "Alternative",
+    color: "var(--terms-alternative)",
+    description: "Non-traditional structures",
   },
   {
     id: "conventional",
     name: "Conventional",
-    color: "var(--cat-conventional)",
-    description: "Standard commercial financing instruments",
-    icon: "Briefcase",
+    color: "var(--terms-conventional)",
+    description: "Standard market-rate terms",
+  },
+  {
+    id: "government",
+    name: "Government",
+    color: "var(--terms-government)",
+    description: "Public-sector programs and incentives",
   },
 ];
 
