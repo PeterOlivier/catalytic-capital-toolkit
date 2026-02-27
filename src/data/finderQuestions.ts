@@ -60,9 +60,9 @@ export const questions: FinderQuestion[] = [
     title: "What kind of organization are you?",
     subtitle: "This helps us filter out options you're not eligible for.",
     options: [
-      { value: "nonprofit", label: "Nonprofit", description: "501(c)(3) or equivalent" },
-      { value: "c-corp", label: "C-Corp", description: "Standard corporation structure" },
       { value: "llc", label: "LLC / Other for-profit", description: "LLC, S-Corp, B-Corp, sole prop, or partnership" },
+      { value: "c-corp", label: "C-Corp", description: "Standard corporation structure" },
+      { value: "nonprofit", label: "Nonprofit", description: "501(c)(3) or equivalent" },
       { value: "cooperative", label: "Cooperative", description: "Co-op, community land trust, or member-owned" },
       { value: "government", label: "Government / Public entity", description: "Municipal, state, tribal, or quasi-governmental" },
       { value: "not-formed", label: "Not yet formed", description: "Pre-incorporation or exploring structures" },
@@ -77,7 +77,7 @@ export const questions: FinderQuestion[] = [
       { value: "rnd", label: "R&D / prototype", description: "Building and testing, not yet deployed" },
       { value: "pilot", label: "Pilot / early traction", description: "First customers or beneficiaries, proving the model" },
       { value: "growth", label: "Growth", description: "Model works, need funding to expand" },
-      { value: "scale", label: "Scale", description: "Proven at scale, need major funding" },
+      { value: "scale", label: "Scaling", description: "Operating at scale, need major capital to grow further" },
     ],
   },
   {
@@ -129,7 +129,7 @@ export const questions: FinderQuestion[] = [
     title: "Do you have connections in the impact space?",
     subtitle: "Some funding sources require relationships with foundations or impact investors.",
     options: [
-      { value: "deep", label: "Deep connections", description: "Active relationships with foundations, DFIs, or impact investors" },
+      { value: "deep", label: "Deep connections", description: "Active relationships with foundations, DFIs, DAF sponsors, or impact investors" },
       { value: "some", label: "Some connections", description: "Know a few people, have had some conversations" },
       { value: "none", label: "Starting from scratch", description: "No existing relationships in the impact/philanthropic world" },
     ],
@@ -145,7 +145,7 @@ export const questions: FinderQuestion[] = [
       { value: "largest-amount", label: "Largest possible amount", description: "Maximize how much I can raise" },
       { value: "speed", label: "Speed above all", description: "Get the money as fast as possible" },
       { value: "flexibility", label: "Flexibility if things go wrong", description: "Forgiving terms, room to pivot" },
-      { value: "proven", label: "Proven and well-understood", description: "Established structure with a long track record" },
+      { value: "proven", label: "Established track record", description: "Well-known instrument with broad market adoption" },
     ],
   },
 ];
@@ -367,7 +367,9 @@ function scorePriorities(instrument: Instrument, priorities: Priority[]): number
   for (const p of priorities) {
     switch (p) {
       case "ownership": {
-        if (instrument.category === "equity") { boost += 0; }
+        const dilutiveConventional = new Set(["vc-equity", "angel-seed", "crowdfunding"]);
+        if (instrument.category === "equity" || dilutiveConventional.has(instrument.slug)) { boost += 0; }
+        else if (instrument.terms === "conventional" && !dilutiveConventional.has(instrument.slug)) boost += 8;
         else if (["grant", "debt", "guarantee"].includes(instrument.category) && instrument.slug !== "convertible-note") boost += 8;
         else if (instrument.category === "hybrid" || instrument.slug === "convertible-note") boost += 4;
         break;
@@ -529,7 +531,12 @@ export function scoreInstruments(answers: FinderAnswers, instruments: Instrument
       score += priorityScore;
       // Add priority-based reasons
       if (answers.priorities.includes("ownership")) {
-        if (inst.category !== "equity" && ["grant", "debt", "guarantee"].includes(inst.category) && inst.slug !== "convertible-note") {
+        const dilutiveConventional = new Set(["vc-equity", "angel-seed", "crowdfunding"]);
+        if (dilutiveConventional.has(inst.slug)) {
+          // no non-dilutive reason for these
+        } else if (inst.terms === "conventional" && !dilutiveConventional.has(inst.slug)) {
+          reasons.push("Non-dilutive — you keep full ownership and control");
+        } else if (inst.category !== "equity" && ["grant", "debt", "guarantee"].includes(inst.category) && inst.slug !== "convertible-note") {
           reasons.push("Non-dilutive — you keep full ownership and control");
         }
       }

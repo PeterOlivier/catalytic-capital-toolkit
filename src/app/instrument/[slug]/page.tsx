@@ -149,6 +149,11 @@ export default function InstrumentPage() {
               </span>
             ))}
           </div>
+
+          {/* Disclaimer */}
+          <p className="text-[11px] text-text-tertiary/70 mt-4 leading-relaxed">
+            Illustrative ranges only &mdash; actual terms vary by provider, creditworthiness, and market conditions.
+          </p>
         </div>
       </section>
 

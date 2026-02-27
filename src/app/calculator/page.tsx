@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { stackInstruments } from "@/data/stackInstruments";
 import { StackLayer } from "@/data/types";
@@ -15,6 +16,8 @@ import {
   Clock,
   BarChart3,
   Calendar,
+  Compass,
+  ArrowRight,
 } from "lucide-react";
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -67,18 +70,22 @@ function generateSchedule(
 
   // Revenue-Based Financing
   if (def.repaymentType === "revenue-based") {
-    const monthlyRev = layer.monthlyRevenue ?? 0;
+    const baseMonthlyRev = layer.monthlyRevenue ?? 0;
     const sharePct = layer.revenueSharePct ?? def.defaultRevenueShare ?? 5;
     const capX = layer.repaymentCapX ?? def.defaultCapMultiple ?? 1.5;
-    if (monthlyRev <= 0 || sharePct <= 0) return [];
+    const annualGrowth = layer.revenueGrowthPct ?? 0;
+    // Monthly compounding factor: (1 + annual%)^(1/12)
+    const monthlyGrowthFactor = annualGrowth !== 0 ? Math.pow(1 + annualGrowth / 100, 1 / 12) : 1;
+    if (baseMonthlyRev <= 0 || sharePct <= 0) return [];
 
     const totalCap = layer.amount * capX;
-    const monthlyPayment = monthlyRev * (sharePct / 100);
-    const premium = totalCap - layer.amount; // total "interest" equivalent
     const schedule: { month: number; principal: number; interest: number; total: number; balance: number }[] = [];
     let remaining = totalCap;
 
     for (let m = 1; remaining > 0.01; m++) {
+      // Revenue grows each month
+      const currentRev = baseMonthlyRev * Math.pow(monthlyGrowthFactor, m - 1);
+      const monthlyPayment = currentRev * (sharePct / 100);
       const total = Math.min(monthlyPayment, remaining);
       // Split proportionally: principal portion vs premium portion
       const principalPortion = total * (layer.amount / totalCap);
@@ -123,17 +130,52 @@ function generateSchedule(
   return schedule;
 }
 
+const STACK_STORAGE_KEY = "cct-stack-state";
+
+const DEFAULT_LAYERS: StackLayer[] = [
+  { instrumentId: "sba-loan", amount: 2000000, rate: 6.5, termMonths: 120, startYear: CURRENT_YEAR - 4, startMonth: 1 },
+  { instrumentId: "equipment-financing", amount: 1500000, rate: 7.0, termMonths: 60, startYear: CURRENT_YEAR - 1, startMonth: 1 },
+  { instrumentId: "standard-equity", amount: 2500000, rate: 0, termMonths: 0, startYear: CURRENT_YEAR - 3, startMonth: 1 },
+  { instrumentId: "stack-grant", amount: 350000, rate: 0, termMonths: 0, startYear: CURRENT_YEAR - 2, startMonth: 1 },
+];
+
 export default function CalculatorPage() {
-  const [layers, setLayers] = useState<StackLayer[]>([
-    { instrumentId: "sba-loan", amount: 2000000, rate: 6.5, termMonths: 120, startYear: CURRENT_YEAR - 4, startMonth: 7 },
-    { instrumentId: "equipment-financing", amount: 1500000, rate: 7.0, termMonths: 60, startYear: CURRENT_YEAR - 1, startMonth: 11 },
-    { instrumentId: "standard-equity", amount: 2500000, rate: 0, termMonths: 0, startYear: CURRENT_YEAR - 3, startMonth: 1 },
-    { instrumentId: "stack-grant", amount: 350000, rate: 0, termMonths: 0, startYear: CURRENT_YEAR - 2, startMonth: 6 },
-  ]);
+  const [layers, setLayers] = useState<StackLayer[]>(DEFAULT_LAYERS);
   const [showAdd, setShowAdd] = useState(false);
   const [hoveredChartIdx, setHoveredChartIdx] = useState<number | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
-  const [expandedLayer, setExpandedLayer] = useState<number | null>(0);
+  const [expandedLayer, setExpandedLayer] = useState<number | null>(null);
+  const [buildMode, setBuildMode] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Restore saved state after hydration
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STACK_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.layers && Array.isArray(parsed.layers) && parsed.layers.length > 0) {
+          // Validate each layer has a valid instrumentId
+          const valid = parsed.layers.every((l: StackLayer) =>
+            stackInstruments.some((s) => s.id === l.instrumentId)
+          );
+          if (valid) {
+            setLayers(parsed.layers);
+            if (typeof parsed.buildMode === "boolean") setBuildMode(parsed.buildMode);
+          }
+        }
+      }
+    } catch { /* ignore corrupt data */ }
+    setHydrated(true);
+  }, []);
+
+  // Persist layers + buildMode to localStorage
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(STACK_STORAGE_KEY, JSON.stringify({ layers, buildMode }));
+    } catch { /* storage full or unavailable */ }
+  }, [layers, buildMode, hydrated]);
 
   const totalAllocated = layers.reduce((sum, l) => sum + l.amount, 0);
 
@@ -151,6 +193,7 @@ export default function CalculatorPage() {
       newLayer.monthlyRevenue = 200000;
       newLayer.revenueSharePct = def.defaultRevenueShare ?? 5;
       newLayer.repaymentCapX = def.defaultCapMultiple ?? 1.5;
+      newLayer.revenueGrowthPct = 0;
     }
     setLayers([...layers, newLayer]);
     setShowAdd(false);
@@ -198,15 +241,23 @@ export default function CalculatorPage() {
 
   const totalMonths = absEnd - absStart + 1;
 
-  // Debt layer defs for chart
+  // Debt layer defs for chart — use index-based IDs to support duplicate instruments
   const debtLayerDefs = useMemo(() => {
     return layerSchedules
-      .filter((ls) => !ls.def.isEquity && !ls.def.isGrant && ls.schedule.length > 0)
-      .map((ls) => ({
-        id: ls.layer.instrumentId,
-        name: ls.def.shortName,
-        color: ls.def.color,
-      }));
+      .map((ls, idx) => ({ ls, idx }))
+      .filter(({ ls }) => !ls.def.isEquity && !ls.def.isGrant && ls.schedule.length > 0)
+      .map(({ ls, idx }) => {
+        // Count how many times this instrument appears before this index
+        const priorCount = layerSchedules.slice(0, idx).filter(
+          (prev) => prev.layer.instrumentId === ls.layer.instrumentId
+        ).length;
+        return {
+          id: `${ls.layer.instrumentId}__${idx}`,
+          layerIdx: idx,
+          name: priorCount > 0 ? `${ls.def.shortName} #${priorCount + 1}` : ls.def.shortName,
+          color: ls.def.color,
+        };
+      });
   }, [layerSchedules]);
 
   // Monthly totals for chart using absolute months
@@ -219,8 +270,9 @@ export default function CalculatorPage() {
       const payments: Record<string, number> = {};
       let total = 0;
       let raised = 0;
-      layerSchedules.forEach((ls) => {
+      layerSchedules.forEach((ls, lsIdx) => {
         const layerAbsStart = toAbsMonth(ls.layer.startYear, ls.layer.startMonth);
+        const uniqueId = `${ls.layer.instrumentId}__${lsIdx}`;
         // Cumulative amount raised: count layer if its start date <= current month
         if (abs >= layerAbsStart) {
           raised += ls.layer.amount;
@@ -228,7 +280,7 @@ export default function CalculatorPage() {
         if (ls.schedule.length === 0) return;
         const relativeMonth = abs - layerAbsStart + 1; // 1-indexed
         if (relativeMonth < 1 || relativeMonth > ls.schedule.length) {
-          payments[ls.layer.instrumentId] = 0;
+          payments[uniqueId] = 0;
           return;
         }
         const entry = ls.schedule[relativeMonth - 1];
@@ -237,7 +289,7 @@ export default function CalculatorPage() {
         const val = isLastMonth && (ls.def.repaymentType === "bullet" || ls.def.repaymentType === "interest-only")
           ? entry.interest
           : entry.total;
-        payments[ls.layer.instrumentId] = val;
+        payments[uniqueId] = val;
         total += val;
       });
       data.push({ absMonth: abs, payments, total, amountRaised: raised });
@@ -352,102 +404,162 @@ export default function CalculatorPage() {
     <div className="min-h-screen">
       {/* Header */}
       <section className="relative overflow-hidden bg-gradient-to-b from-accent/6 via-background to-background">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 xl:px-20 pt-16 pb-12">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 text-accent text-sm font-medium mb-8">
-              Interactive capital stack modeler
-            </div>
-            <h1 className="font-heading text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-5">
-              Build <em className="text-accent italic">Your</em> Capital Stack
-            </h1>
-            <p className="text-lg sm:text-xl text-text-secondary leading-relaxed max-w-2xl">
-              Mix conventional and catalytic instruments, adjust rates, terms,
-              and timing — then see monthly payments and total cost of debt
-              over time.
-            </p>
-          </div>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 xl:px-20">
+          <AnimatePresence mode="wait">
+            {!buildMode ? (
+              <motion.div
+                key="full-hero"
+                initial={false}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="pt-16 pb-8"
+              >
+                <div className="max-w-3xl">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 text-accent text-sm font-medium mb-8">
+                    Interactive capital stack modeler
+                  </div>
+                  <h1 className="font-heading text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-[1.1] mb-5">
+                    Build <em className="text-accent italic">Your</em> Capital Stack
+                  </h1>
+                  <p className="text-lg sm:text-xl text-text-secondary leading-relaxed max-w-2xl mb-8">
+                    Mix conventional and catalytic instruments, adjust rates, terms,
+                    and timing — then see monthly payments and total cost of debt
+                    over time.
+                  </p>
+                  <button
+                    onClick={() => setBuildMode(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors shadow-sm"
+                  >
+                    <Layers className="w-4 h-4" />
+                    Build my capital stack
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="mini-hero"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+                className="py-5 flex items-center justify-between"
+              >
+                <h1 className="font-heading text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                  Build <em className="text-accent italic">Your</em> Capital Stack
+                </h1>
+                <button
+                  onClick={() => setBuildMode(false)}
+                  className="text-xs text-text-tertiary hover:text-text-secondary transition-colors"
+                >
+                  Show intro
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 xl:px-20 py-8">
-        {/* Payment Timeline Chart */}
-        {debtLayerDefs.length > 0 && chartData.length > 1 && (
-          <div className="mb-8 bg-surface rounded-2xl border border-border p-5">
-            <h3 className="text-sm font-semibold text-text-secondary mb-2">
-              Debt Payment Schedule Over Time
-            </h3>
-            <p className="text-xs text-text-tertiary mb-4">
-              Stacked monthly payments across all debt instruments, showing how debt service changes as loans are paid off.
-            </p>
+        {/* Payment Timeline Chart — always visible */}
+        <div className="mb-8 bg-surface rounded-2xl border border-border p-5 max-w-5xl mx-auto">
+          <h3 className="text-sm font-semibold text-text-secondary mb-2">
+            {buildMode ? (
+              <>My Estimated Debt Payment Schedule</>
+            ) : (
+              <><span className="text-accent">Example</span> Debt Payment Schedule Over Time</>
+            )}
+          </h3>
+          <p className="text-xs text-text-tertiary mb-4">
+            Stacked monthly payments across all debt instruments, showing how debt service changes as loans are paid off.
+          </p>
 
-            {/* Legend */}
-            <div className="flex flex-wrap gap-x-4 gap-y-1 mb-4">
-              {debtLayerDefs.map((d) => (
-                <div key={d.id} className="flex items-center gap-1.5 text-xs text-text-secondary">
-                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: d.color }} />
-                  {d.name}
-                </div>
-              ))}
-<div className="flex items-center gap-1.5 text-xs text-text-secondary">
+          {/* Legend */}
+          <div className="flex flex-wrap gap-x-4 gap-y-1 mb-4 min-h-[20px]">
+            {debtLayerDefs.map((d) => (
+              <div key={d.id} className="flex items-center gap-1.5 text-xs text-text-secondary">
+                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: d.color }} />
+                {d.name}
+              </div>
+            ))}
+            {layers.length > 0 && (
+              <div className="flex items-center gap-1.5 text-xs text-text-secondary">
                 <div className="w-3 h-0.5 rounded-full bg-accent" />
                 Amount Raised
               </div>
-            </div>
+            )}
+          </div>
 
-            {/* SVG stacked area chart */}
-            <div className="flex">
-              {/* Left Y-axis labels (payments) */}
-              <div className="flex flex-col justify-between pr-2 py-1 flex-shrink-0" style={{ height: "250px" }}>
-                <span className="text-[10px] text-text-tertiary tabular-nums text-right">{formatCompact(chartMaxPayment)}</span>
-                <span className="text-[10px] text-text-tertiary tabular-nums text-right">{formatCompact(chartMaxPayment * 0.75)}</span>
-                <span className="text-[10px] text-text-tertiary tabular-nums text-right">{formatCompact(chartMaxPayment / 2)}</span>
-                <span className="text-[10px] text-text-tertiary tabular-nums text-right">{formatCompact(chartMaxPayment * 0.25)}</span>
+          {/* SVG stacked area chart */}
+          <div className="flex gap-6">
+            {/* Left Y-axis label + values */}
+            <div className="flex flex-shrink-0" style={{ height: "250px" }}>
+              <div className="flex items-center justify-center" style={{ writingMode: "vertical-rl" }}>
+                <span className="text-[9px] font-medium text-text-tertiary uppercase tracking-wider rotate-180">Monthly Payment</span>
+              </div>
+              <div className="flex flex-col justify-between pl-2 py-1">
+                {debtLayerDefs.length > 0 ? (
+                  <>
+                    <span className="text-[10px] text-text-tertiary tabular-nums text-right">{formatCompact(chartMaxPayment)}</span>
+                    <span className="text-[10px] text-text-tertiary tabular-nums text-right">{formatCompact(chartMaxPayment * 0.75)}</span>
+                    <span className="text-[10px] text-text-tertiary tabular-nums text-right">{formatCompact(chartMaxPayment / 2)}</span>
+                    <span className="text-[10px] text-text-tertiary tabular-nums text-right">{formatCompact(chartMaxPayment * 0.25)}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[10px] text-text-tertiary tabular-nums text-right">&mdash;</span>
+                    <span className="text-[10px] text-text-tertiary tabular-nums text-right">&mdash;</span>
+                    <span className="text-[10px] text-text-tertiary tabular-nums text-right">&mdash;</span>
+                    <span className="text-[10px] text-text-tertiary tabular-nums text-right">&mdash;</span>
+                  </>
+                )}
                 <span className="text-[10px] text-text-tertiary text-right">$0</span>
               </div>
+            </div>
 
-              {/* Chart area */}
-              <div
-                ref={chartRef}
-                className="flex-1 relative cursor-crosshair"
-                style={{ height: "250px" }}
-                onMouseMove={handleChartMouseMove}
-                onMouseLeave={() => setHoveredChartIdx(null)}
+            {/* Chart area */}
+            <div
+              ref={chartRef}
+              className="flex-1 relative cursor-crosshair"
+              style={{ height: "250px" }}
+              onMouseMove={handleChartMouseMove}
+              onMouseLeave={() => setHoveredChartIdx(null)}
+            >
+              <svg
+                viewBox={`0 0 ${Math.max(chartData.length, 2)} 100`}
+                preserveAspectRatio="none"
+                className="w-full h-full"
               >
-                <svg
-                  viewBox={`0 0 ${chartData.length} 100`}
-                  preserveAspectRatio="none"
-                  className="w-full h-full"
-                >
-                  {/* Grid lines */}
-                  <line x1="0" y1="25" x2={chartData.length} y2="25" stroke="#e2e8f0" strokeWidth="0.3" />
-                  <line x1="0" y1="50" x2={chartData.length} y2="50" stroke="#e2e8f0" strokeWidth="0.3" />
-                  <line x1="0" y1="75" x2={chartData.length} y2="75" stroke="#e2e8f0" strokeWidth="0.3" />
+                {/* Grid lines */}
+                <line x1="0" y1="25" x2={Math.max(chartData.length, 2)} y2="25" stroke="#e2e8f0" strokeWidth="0.3" />
+                <line x1="0" y1="50" x2={Math.max(chartData.length, 2)} y2="50" stroke="#e2e8f0" strokeWidth="0.3" />
+                <line x1="0" y1="75" x2={Math.max(chartData.length, 2)} y2="75" stroke="#e2e8f0" strokeWidth="0.3" />
 
-                  {/* Stacked areas */}
-                  {debtLayerDefs.map((layerDef, layerIdx) => {
-                    const points = chartData.map((d, i) => {
-                      let yBottom = 0;
-                      for (let j = 0; j < layerIdx; j++) {
-                        yBottom += (d.payments[debtLayerDefs[j].id] || 0) / chartMaxPayment * 100;
-                      }
-                      const yTop = yBottom + (d.payments[layerDef.id] || 0) / chartMaxPayment * 100;
-                      return { x: i, yBottom, yTop };
-                    });
+                {/* Stacked areas */}
+                {debtLayerDefs.map((layerDef, layerIdx) => {
+                  const points = chartData.map((d, i) => {
+                    let yBottom = 0;
+                    for (let j = 0; j < layerIdx; j++) {
+                      yBottom += (d.payments[debtLayerDefs[j].id] || 0) / chartMaxPayment * 100;
+                    }
+                    const yTop = yBottom + (d.payments[layerDef.id] || 0) / chartMaxPayment * 100;
+                    return { x: i, yBottom, yTop };
+                  });
 
-                    const topLine = points.map((p) => `${p.x},${100 - p.yTop}`).join(" ");
-                    const bottomLine = [...points].reverse().map((p) => `${p.x},${100 - p.yBottom}`).join(" ");
+                  const topLine = points.map((p) => `${p.x},${100 - p.yTop}`).join(" ");
+                  const bottomLine = [...points].reverse().map((p) => `${p.x},${100 - p.yBottom}`).join(" ");
 
-                    return (
-                      <polygon
-                        key={layerDef.id}
-                        points={`${topLine} ${bottomLine}`}
-                        fill={layerDef.color}
-                        opacity={0.75}
-                      />
-                    );
-                  })}
+                  return (
+                    <polygon
+                      key={layerDef.id}
+                      points={`${topLine} ${bottomLine}`}
+                      fill={layerDef.color}
+                      opacity={0.75}
+                    />
+                  );
+                })}
 
-                  {/* Amount raised line (right Y-axis) */}
+                {/* Amount raised line (right Y-axis) */}
+                {chartData.length > 1 && (
                   <polyline
                     points={chartData.map((d, i) => `${i},${100 - (d.amountRaised / chartMaxRaised) * 100}`).join(" ")}
                     fill="none"
@@ -455,133 +567,212 @@ export default function CalculatorPage() {
                     strokeWidth="0.8"
                     vectorEffect="non-scaling-stroke"
                   />
+                )}
 
-                  {/* Crosshair line */}
-                  {hoveredChartIdx !== null && (
-                    <line
-                      x1={hoveredChartIdx}
-                      y1={0}
-                      x2={hoveredChartIdx}
-                      y2={100}
-                      stroke="#334155"
-                      strokeWidth="0.4"
-                      strokeDasharray="1,1"
-                    />
-                  )}
-                </svg>
+                {/* Crosshair line */}
+                {hoveredChartIdx !== null && (
+                  <line
+                    x1={hoveredChartIdx}
+                    y1={0}
+                    x2={hoveredChartIdx}
+                    y2={100}
+                    stroke="#334155"
+                    strokeWidth="0.4"
+                    strokeDasharray="1,1"
+                  />
+                )}
+              </svg>
 
-                {/* Tooltip */}
-                {hoveredChartIdx !== null && chartData[hoveredChartIdx] && (() => {
-                  const d = chartData[hoveredChartIdx];
-                  const { year, month } = fromAbsMonth(d.absMonth);
-                  const pctX = hoveredChartIdx / (chartData.length - 1);
-                  const flipsLeft = pctX > 0.7;
-                  return (
-                    <div
-                      className="absolute top-2 pointer-events-none z-10"
-                      style={{ left: flipsLeft ? undefined : `${pctX * 100}%`, right: flipsLeft ? `${(1 - pctX) * 100}%` : undefined, marginLeft: flipsLeft ? undefined : "12px", marginRight: flipsLeft ? "12px" : undefined }}
-                    >
-                      <div className="bg-foreground/95 text-white rounded-lg px-3 py-2 text-xs shadow-lg whitespace-nowrap">
-                        <div className="font-semibold mb-1.5">{formatDate(year, month)}</div>
-                        {/* Debt layers — monthly payments */}
-                        {debtLayerDefs.map((ld) => {
-                          const val = d.payments[ld.id] || 0;
-                          if (val <= 0) return null;
-                          return (
-                            <div key={ld.id} className="flex items-center justify-between gap-4 py-0.5">
-                              <div className="flex items-center gap-1.5">
-                                <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: ld.color }} />
-                                <span className="opacity-80">{ld.name}</span>
-                              </div>
-                              <span className="font-medium tabular-nums">{formatCompact(val)}</span>
+              {/* Empty state overlay */}
+              {debtLayerDefs.length === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <p className="text-sm text-text-tertiary/60 italic">
+                    Add a debt instrument to see payments here
+                  </p>
+                </div>
+              )}
+
+              {/* Tooltip */}
+              {hoveredChartIdx !== null && chartData[hoveredChartIdx] && debtLayerDefs.length > 0 && (() => {
+                const d = chartData[hoveredChartIdx];
+                const { year, month } = fromAbsMonth(d.absMonth);
+                const pctX = hoveredChartIdx / (chartData.length - 1);
+                const flipsLeft = pctX > 0.7;
+                return (
+                  <div
+                    className="absolute top-2 pointer-events-none z-10"
+                    style={{ left: flipsLeft ? undefined : `${pctX * 100}%`, right: flipsLeft ? `${(1 - pctX) * 100}%` : undefined, marginLeft: flipsLeft ? undefined : "12px", marginRight: flipsLeft ? "12px" : undefined }}
+                  >
+                    <div className="bg-foreground/95 text-white rounded-lg px-3 py-2 text-xs shadow-lg whitespace-nowrap">
+                      <div className="font-semibold mb-1.5">{formatDate(year, month)}</div>
+                      {/* Debt layers — monthly payments */}
+                      {debtLayerDefs.map((ld) => {
+                        const val = d.payments[ld.id] || 0;
+                        if (val <= 0) return null;
+                        return (
+                          <div key={ld.id} className="flex items-center justify-between gap-4 py-0.5">
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: ld.color }} />
+                              <span className="opacity-80">{ld.name}</span>
                             </div>
-                          );
-                        })}
-                        <div className="flex items-center justify-between gap-4 pt-1 mt-1 border-t border-white/20 font-semibold">
-                          <span>Total Payment</span>
-                          <span className="tabular-nums">{formatCompact(d.total)}</span>
-                        </div>
-                        {/* Capital raised — grouped by type */}
-                        {(() => {
-                          const active = layerSchedules.filter((ls) => d.absMonth >= toAbsMonth(ls.layer.startYear, ls.layer.startMonth));
-                          const debt = active.filter((ls) => !ls.def.isEquity && !ls.def.isGrant).reduce((s, ls) => s + ls.layer.amount, 0);
-                          const equity = active.filter((ls) => ls.def.isEquity).reduce((s, ls) => s + ls.layer.amount, 0);
-                          const grants = active.filter((ls) => ls.def.isGrant).reduce((s, ls) => s + ls.layer.amount, 0);
-                          const categories = [
-                            { label: "Debt", amount: debt, color: "#4a7b8f" },
-                            { label: "Equity", amount: equity, color: "#b05445" },
-                            { label: "Grants", amount: grants, color: "#7b6b9e" },
-                          ].filter((c) => c.amount > 0);
-                          return (
-                            <div className="pt-1.5 mt-1.5 border-t border-white/30">
-                              {categories.map((c) => (
-                                <div key={c.label} className="flex items-center justify-between gap-4 py-0.5">
-                                  <div className="flex items-center gap-1.5">
-                                    <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: c.color }} />
-                                    <span className="opacity-80">{c.label}</span>
-                                  </div>
-                                  <span className="font-medium tabular-nums">{formatCompact(c.amount)}</span>
-                                </div>
-                              ))}
-                              <div className="flex items-center justify-between gap-4 pt-1 mt-1 border-t border-white/20 font-semibold">
-                                <span>Total Raised</span>
-                                <span className="tabular-nums">{formatCompact(d.amountRaised)}</span>
-                              </div>
-                            </div>
-                          );
-                        })()}
+                            <span className="font-medium tabular-nums">{formatCompact(val)}</span>
+                          </div>
+                        );
+                      })}
+                      <div className="flex items-center justify-between gap-4 pt-1 mt-1 border-t border-white/20 font-semibold">
+                        <span>Total Payment</span>
+                        <span className="tabular-nums">{formatCompact(d.total)}</span>
                       </div>
+                      {/* Capital raised — grouped by type */}
+                      {(() => {
+                        const active = layerSchedules.filter((ls) => d.absMonth >= toAbsMonth(ls.layer.startYear, ls.layer.startMonth));
+                        const debt = active.filter((ls) => !ls.def.isEquity && !ls.def.isGrant).reduce((s, ls) => s + ls.layer.amount, 0);
+                        const equity = active.filter((ls) => ls.def.isEquity).reduce((s, ls) => s + ls.layer.amount, 0);
+                        const grants = active.filter((ls) => ls.def.isGrant).reduce((s, ls) => s + ls.layer.amount, 0);
+                        const categories = [
+                          { label: "Debt", amount: debt, color: "#4a7b8f" },
+                          { label: "Equity", amount: equity, color: "#b05445" },
+                          { label: "Grants", amount: grants, color: "#7b6b9e" },
+                        ].filter((c) => c.amount > 0);
+                        return (
+                          <div className="pt-1.5 mt-1.5 border-t border-white/30">
+                            {categories.map((c) => (
+                              <div key={c.label} className="flex items-center justify-between gap-4 py-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: c.color }} />
+                                  <span className="opacity-80">{c.label}</span>
+                                </div>
+                                <span className="font-medium tabular-nums">{formatCompact(c.amount)}</span>
+                              </div>
+                            ))}
+                            <div className="flex items-center justify-between gap-4 pt-1 mt-1 border-t border-white/20 font-semibold">
+                              <span>Total Raised</span>
+                              <span className="tabular-nums">{formatCompact(d.amountRaised)}</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
-                  );
-                })()}
-              </div>
-
-              {/* Right Y-axis labels (amount raised) */}
-              <div className="flex flex-col justify-between pl-2 py-1 flex-shrink-0" style={{ height: "250px" }}>
-                <span className="text-[10px] text-amber-500 tabular-nums">{formatCompact(chartMaxRaised)}</span>
-                <span className="text-[10px] text-amber-500 tabular-nums">{formatCompact(chartMaxRaised * 0.75)}</span>
-                <span className="text-[10px] text-amber-500 tabular-nums">{formatCompact(chartMaxRaised / 2)}</span>
-                <span className="text-[10px] text-amber-500 tabular-nums">{formatCompact(chartMaxRaised * 0.25)}</span>
-                <span className="text-[10px] text-amber-500">$0</span>
-              </div>
+                  </div>
+                );
+              })()}
             </div>
 
-            {/* X-axis with date labels */}
-            <div className="flex justify-between mt-2 mx-12">
-              {xAxisLabels.map((label, i) => (
-                <span key={i} className="text-[10px] text-text-tertiary">{label.label}</span>
-              ))}
-            </div>
-
-            {/* Key stats row */}
-            <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-border">
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-0.5">Total Raised</div>
-                <div className="text-lg font-bold text-foreground tabular-nums">{formatCompact(totalAllocated)}</div>
+            {/* Right Y-axis values + label */}
+            <div className="flex flex-shrink-0" style={{ height: "250px" }}>
+              <div className="flex flex-col justify-between pr-2 py-1">
+                {layers.length > 0 ? (
+                  <>
+                    <span className="text-[10px] text-accent tabular-nums">{formatCompact(chartMaxRaised)}</span>
+                    <span className="text-[10px] text-accent tabular-nums">{formatCompact(chartMaxRaised * 0.75)}</span>
+                    <span className="text-[10px] text-accent tabular-nums">{formatCompact(chartMaxRaised / 2)}</span>
+                    <span className="text-[10px] text-accent tabular-nums">{formatCompact(chartMaxRaised * 0.25)}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[10px] text-accent tabular-nums">&mdash;</span>
+                    <span className="text-[10px] text-accent tabular-nums">&mdash;</span>
+                    <span className="text-[10px] text-accent tabular-nums">&mdash;</span>
+                    <span className="text-[10px] text-accent tabular-nums">&mdash;</span>
+                  </>
+                )}
+                <span className="text-[10px] text-accent">$0</span>
               </div>
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-0.5">Total Debt</div>
-                <div className="text-lg font-bold text-foreground tabular-nums">{formatCompact(summaryStats.debtAmount)}</div>
-              </div>
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-0.5">Total Interest</div>
-                <div className="text-lg font-bold text-danger tabular-nums">{formatCompact(summaryStats.totalInterest)}</div>
-              </div>
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-0.5">Wtd. Blended Cost</div>
-                <div className="text-lg font-bold text-foreground tabular-nums">{summaryStats.weightedRate.toFixed(2)}%</div>
+              <div className="flex items-center justify-center" style={{ writingMode: "vertical-rl" }}>
+                <span className="text-[9px] font-medium text-accent uppercase tracking-wider">Cumulative Raised</span>
               </div>
             </div>
           </div>
-        )}
+
+          {/* X-axis with date labels */}
+          <div className="flex justify-between mt-2 mx-12 min-h-[16px]">
+            {xAxisLabels.map((label, i) => (
+              <span key={i} className="text-[10px] text-text-tertiary">{label.label}</span>
+            ))}
+          </div>
+
+          {/* Key stats row */}
+          <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-border">
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-0.5">Total Raised</div>
+              <div className="text-lg font-bold text-foreground tabular-nums">{formatCompact(totalAllocated)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-0.5">Total Debt</div>
+              <div className="text-lg font-bold text-foreground tabular-nums">{formatCompact(summaryStats.debtAmount)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-0.5">Total Interest</div>
+              <div className="text-lg font-bold text-danger tabular-nums">{formatCompact(summaryStats.totalInterest)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-0.5">Wtd. Blended Cost</div>
+              <div className="text-lg font-bold text-foreground tabular-nums">{summaryStats.weightedRate.toFixed(2)}%</div>
+            </div>
+          </div>
+
+          {/* Disclaimer */}
+          <p className="text-[11px] text-text-tertiary/70 mt-3 leading-relaxed text-center">
+            Illustrative ranges only &mdash; actual terms vary by provider, creditworthiness, and market conditions.
+          </p>
+        </div>
 
         <div>
           {/* Stack builder */}
           <div className="space-y-4">
             <div className="mb-1">
               <h3 className="font-heading text-sm font-semibold text-foreground">
-                Capital Stack ({layers.length} layers)
+                {buildMode ? "My" : <span className="text-accent">Example</span>} Capital Stack ({layers.length} layers)
               </h3>
+            </div>
+
+            {/* Add instrument */}
+            <div className="relative">
+              <button
+                onClick={() => setShowAdd(!showAdd)}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-border hover:border-accent/30 text-text-secondary hover:text-accent text-sm font-medium transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add Instrument
+                <ChevronDown className={`w-4 h-4 transition-transform ${showAdd ? "rotate-180" : ""}`} />
+              </button>
+              <AnimatePresence>
+                {showAdd && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-surface border border-border rounded-xl shadow-xl max-h-80 overflow-y-auto z-20"
+                  >
+                    {Object.entries(groupedAvailable).map(([group, items]) => (
+                      <div key={group}>
+                        <div className="px-4 py-2 text-[10px] uppercase tracking-wider font-semibold text-text-tertiary bg-surface-secondary border-b border-border">
+                          {group}
+                        </div>
+                        {items.map((inst) => (
+                          <button
+                            key={inst.id}
+                            onClick={() => addLayer(inst.id)}
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-secondary text-left transition-colors border-b border-border last:border-0"
+                          >
+                            <div className="w-3 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: inst.color }} />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium text-foreground truncate">{inst.name}</div>
+                              <div className="text-xs text-text-tertiary">
+                                {inst.isEquity ? "Equity -- no debt service"
+                                  : inst.isGrant ? "No repayment"
+                                  : inst.repaymentType === "revenue-based"
+                                  ? `${inst.defaultRevenueShare}% of revenue / ${inst.defaultCapMultiple}x cap`
+                                  : `${inst.defaultRate}% / ${Math.round(inst.defaultTerm / 12)}yr / ${inst.repaymentType}`}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Layer cards */}
@@ -604,18 +795,27 @@ export default function CalculatorPage() {
                   >
                     {/* Header */}
                     <div
-                      className="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-secondary/50 transition-colors"
+                      className="group/layer flex items-center justify-between p-4 cursor-pointer hover:bg-surface-secondary/50 transition-colors relative"
                       onClick={() => setExpandedLayer(isExpanded ? null : idx)}
+                      title="Click to tweak rates, terms, timing — or remove it entirely"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-3 h-10 rounded-full flex-shrink-0" style={{ backgroundColor: def.color }} />
                         <div className="min-w-0">
-                          <div className="text-sm font-semibold text-foreground truncate">{def.shortName}</div>
+                          <div className="text-sm font-semibold text-foreground truncate">
+                            {def.shortName}
+                            {!isExpanded && (
+                              <span className="ml-2 text-[10px] font-normal text-accent/0 group-hover/layer:text-accent/70 transition-colors duration-200">
+                                Click to customize &darr;
+                              </span>
+                            )}
+                          </div>
                           <div className="text-xs text-text-tertiary">
                             {formatCurrency(layer.amount)}
                             {isRBF && (
                               <span>
                                 {" "}&middot; {layer.revenueSharePct ?? def.defaultRevenueShare}% of rev &middot; {layer.repaymentCapX ?? def.defaultCapMultiple}x cap
+                                {(layer.revenueGrowthPct ?? 0) !== 0 && <> &middot; {layer.revenueGrowthPct}% growth</>}
                                 {" "}&middot; {MONTH_NAMES[layer.startMonth - 1]} {layer.startYear}
                               </span>
                             )}
@@ -633,8 +833,14 @@ export default function CalculatorPage() {
                       <div className="flex items-center gap-3">
                         {isDebt && sched.length > 0 && (
                           <div className="flex items-center gap-5 text-right hidden sm:flex">
-                            <div>
-                              <div className="text-[10px] text-text-tertiary">Monthly Payment</div>
+                            <div title={isRBF && (layer.revenueGrowthPct ?? 0) !== 0 ? "Based on initial revenue — actual payments will change as revenue grows" : undefined}>
+                              <div className="text-[10px] text-text-tertiary">
+                                {isRBF ? (
+                                  <span className="border-b border-dotted border-text-tertiary/50 cursor-help">Initial Payment</span>
+                                ) : (
+                                  "Monthly Payment"
+                                )}
+                              </div>
                               <div className="text-xs font-semibold text-foreground tabular-nums">{formatCompact(monthlyPayment)}</div>
                             </div>
                             <div>
@@ -669,6 +875,13 @@ export default function CalculatorPage() {
                         >
                           <div className="p-4 space-y-4">
                             <p className="text-xs text-text-tertiary leading-relaxed">{def.description}</p>
+
+                            {/* Mezzanine hint */}
+                            {layer.instrumentId === "mezzanine-debt" && !layers.some(l => ["term-loan", "sba-loan", "commercial-mortgage"].includes(l.instrumentId)) && (
+                              <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 leading-relaxed">
+                                Mezzanine debt typically sits below senior debt in the capital stack. Consider adding a senior loan (term loan, SBA, or commercial mortgage) above it.
+                              </div>
+                            )}
 
                             {/* Amount */}
                             <div>
@@ -748,6 +961,29 @@ export default function CalculatorPage() {
                                   </div>
                                 </div>
 
+                                {/* Revenue Growth Rate */}
+                                <div>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <label className="text-xs font-medium text-text-secondary">
+                                      Annual Revenue Growth
+                                    </label>
+                                    <span className="text-sm font-bold text-foreground tabular-nums">
+                                      {layer.revenueGrowthPct ?? 0}%
+                                    </span>
+                                  </div>
+                                  <input type="range"
+                                    min={-20}
+                                    max={100}
+                                    step={5}
+                                    value={layer.revenueGrowthPct ?? 0}
+                                    onChange={(e) => updateLayer(idx, { revenueGrowthPct: Number(e.target.value) })} className="w-full" />
+                                  <div className="flex justify-between text-[10px] text-text-tertiary">
+                                    <span>-20%</span>
+                                    <span>0%</span>
+                                    <span>100%</span>
+                                  </div>
+                                </div>
+
                                 {/* Computed term */}
                                 {sched.length > 0 && (
                                   <div className="text-xs text-text-tertiary bg-surface-secondary rounded-lg px-3 py-2">
@@ -755,7 +991,9 @@ export default function CalculatorPage() {
                                       {sched.length >= 12
                                         ? `${(sched.length / 12).toFixed(1)} years`
                                         : `${sched.length} months`}
-                                    </span> at current revenue
+                                    </span>{(layer.revenueGrowthPct ?? 0) !== 0
+                                      ? ` with ${layer.revenueGrowthPct}% annual revenue growth`
+                                      : " at current revenue"}
                                   </div>
                                 )}
                               </>
@@ -841,57 +1079,24 @@ export default function CalculatorPage() {
                 );
               })}
             </AnimatePresence>
-
-            {/* Add instrument */}
-            <div className="relative">
-              <button
-                onClick={() => setShowAdd(!showAdd)}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-border hover:border-accent/30 text-text-secondary hover:text-accent text-sm font-medium transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Add Instrument
-                <ChevronDown className={`w-4 h-4 transition-transform ${showAdd ? "rotate-180" : ""}`} />
-              </button>
-              <AnimatePresence>
-                {showAdd && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-surface border border-border rounded-xl shadow-xl max-h-80 overflow-y-auto z-20"
-                  >
-                    {Object.entries(groupedAvailable).map(([group, items]) => (
-                      <div key={group}>
-                        <div className="px-4 py-2 text-[10px] uppercase tracking-wider font-semibold text-text-tertiary bg-surface-secondary border-b border-border">
-                          {group}
-                        </div>
-                        {items.map((inst) => (
-                          <button
-                            key={inst.id}
-                            onClick={() => addLayer(inst.id)}
-                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-secondary text-left transition-colors border-b border-border last:border-0"
-                          >
-                            <div className="w-3 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: inst.color }} />
-                            <div className="flex-1 min-w-0">
-                              <div className="text-sm font-medium text-foreground truncate">{inst.name}</div>
-                              <div className="text-xs text-text-tertiary">
-                                {inst.isEquity ? "Equity -- no debt service"
-                                  : inst.isGrant ? "No repayment"
-                                  : inst.repaymentType === "revenue-based"
-                                  ? `${inst.defaultRevenueShare}% of revenue / ${inst.defaultCapMultiple}x cap`
-                                  : `${inst.defaultRate}% / ${Math.round(inst.defaultTerm / 12)}yr / ${inst.repaymentType}`}
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
           </div>
 
+          {/* Finder link */}
+          <div className="mt-8 pt-6 border-t border-border text-center">
+            <div className="inline-flex flex-col items-center gap-2">
+              <p className="text-sm text-text-tertiary">
+                Not sure which instruments are right for you?
+              </p>
+              <Link
+                href="/finder"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent/10 text-accent text-sm font-medium hover:bg-accent/15 transition-colors"
+              >
+                <Compass className="w-4 h-4" />
+                Find the best funding options
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
         </div>
 
       </div>

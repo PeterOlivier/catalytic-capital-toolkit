@@ -238,4 +238,5 @@ export interface StackLayer {
   monthlyRevenue?: number;   // estimated monthly revenue
   revenueSharePct?: number;  // % of revenue going to repayment
   repaymentCapX?: number;    // repayment cap as multiple (e.g. 1.5 = pay back 1.5x)
+  revenueGrowthPct?: number; // annual revenue growth rate % (e.g. 20 = 20% YoY)
 }

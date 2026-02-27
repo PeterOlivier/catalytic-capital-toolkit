@@ -198,6 +198,28 @@ export default function FinderPage() {
               it&apos;s hard to know where to start. Answer a few quick questions and
               we&apos;ll show you what fits.
             </p>
+            {!isResults && (
+              <div className="mt-6 flex items-center gap-4">
+                <button
+                  onClick={() => {
+                    setDirection(1);
+                    setCurrentStep(totalSteps);
+                  }}
+                  className="text-sm text-text-tertiary hover:text-accent transition-colors flex items-center gap-1.5"
+                >
+                  <SkipForward className="w-3.5 h-3.5" />
+                  Skip ahead — show me everything
+                </button>
+                <span className="text-text-tertiary/40">|</span>
+                <Link
+                  href="/"
+                  className="text-sm text-text-tertiary hover:text-accent transition-colors flex items-center gap-1.5"
+                >
+                  <Compass className="w-3.5 h-3.5" />
+                  Browse the full catalog
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </section>
